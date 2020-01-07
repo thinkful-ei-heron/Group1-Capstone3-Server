@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const logger = require('logger');
 const BOILERPLATERouter = require('BOILERPLATERouter');
+const authRouter = require('auth/auth-router'); 
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(function validateBearerToken(req, res, next) {
 });
 
 app.use(BOILERPLATERouter);
+app.use('/api/auth', authRouter);  // CHECK THIS
 
 app.use(function errorHandler(error, req, res, next) {
     let response;
