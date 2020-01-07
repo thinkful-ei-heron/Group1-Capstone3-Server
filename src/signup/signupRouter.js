@@ -71,25 +71,4 @@ signupRouter
         .catch(next);
 });
 
-// signupRouter.patch('/BOILERPLATE/:id', (req, res, next) => {
-//     let db = req.app.get('db');
-//     let id = 1;
-//     let edit = {};
-
-//     signupService.patchBookmark(db, xss(id), edit)
-//         .then(resp => {
-//         })
-//         .catch(next);
-// });
-
-// signupRouter.delete('/BOILERPLATE/:id', (req, res, next) => {
-//     let db = req.app.get('db');
-//     let id = 1;
-    
-//     signupService.deleteBookmark(db, xss(id))
-//         .then(resp => {
-//         })
-//         .catch(next);
-// });
-
 module.exports = signupRouter;
