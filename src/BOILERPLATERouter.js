@@ -1,7 +1,6 @@
 const express = require('express');
 const BOILERPLATEService = require('./BOILERPLATEService');
 const uuid = require('uuid/v4');
-const logger = require('./logger');
 const xss = require('xss');
 
 const BOILERPLATERouter = express.Router();
@@ -21,7 +20,6 @@ BOILERPLATERouter.get('/BOILERPLATE/:id', (req, res, next) => {
 
     //checks to see if id provided is a valid UUID
     if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
-        logger.error('Must provide valid UUID');
         return res.status(400).json({ message: 'Must provide a valid ID to get' });
     }
 
