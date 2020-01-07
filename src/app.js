@@ -4,8 +4,9 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-// const BOILERPLATERouter = require('BOILERPLATERouter');
 const authRouter = require('./auth/auth-router'); 
+const signupRouter = require('./signup/signupRouter');
+
 
 const app = express();
 
@@ -29,8 +30,10 @@ app.use(cors());
 //     next();
 // });
 
-// app.use(BOILERPLATERouter);
 app.use('/api/auth', authRouter);  // CHECK THIS
+app.use(signupRouter);
+
+
 
 // app.use(function errorHandler(error, req, res, next) {
 //     let response;
