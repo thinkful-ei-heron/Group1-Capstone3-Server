@@ -11,11 +11,15 @@ authRouter
     const { username, password } = req.body
     const loginUser = { username, password}
 
-    for(const [key, value] of Object.entries(loginUser))
-      if(value == null)
-        return res.status(400).json({
-          error: `Missing '${key}' in request body`
-        })
+    if(!username)
+    return res.status(400).json({
+      error: `Missing username in request body`
+    })
+
+    if(!password)
+    return res.status(400).json({
+      error: `Missing password in request body`
+    })
 
     try { 
       const dbUser = await AuthService.getUserWithUserName(
@@ -25,42 +29,30 @@ authRouter
 
       if(!dbUser)
         return res.status(400).json({
-          error: 'Incorrect username!',
+          error: 'Incorrect username or password!', // trial error org: user 
         })
 
       const compareMatch = await AuthService.comparePasswords(
-        req.app.get('db'),
-        loginUser.password
+        loginUser.password,
+        dbUser.password
       )
 
       if(!compareMatch)
         return res.status(400).json({
-          error: 'Incorrect password!'
+          error: 'Incorrect username or password!' // trial error switch org: pass
         })
-      
       const subject = dbUser.username
       const payload = { 
           user_id: dbUser.id,
-          name: dbUser.name,
       }
+      let token = AuthService.createJwt(subject, payload)
 
-      res.send({
-        authToken: AuthService.createJwt(subject, payload),
+      return res.send({
+        authToken: token,
       })
     } catch (error) {
       next(error)
     } 
-  })
-
-  .put(requireAuth, (req, res) => {
-    const sub = req.user.username
-    const payload = { 
-      user_id: req.user.id, 
-      name: req.user.name,
-    }
-    res.send({
-      authToken: AuthService.createJwt(subject, payload),
-    })
   })
 
 module.exports = authRouter

@@ -4,9 +4,14 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+const authRouter = require('./auth/auth-router'); 
 const signupRouter = require('./signup/signupRouter');
+<<<<<<< HEAD
 const gameRouter = require('./game/gameRouter');
 // const authRouter = require('auth/auth-router'); 
+=======
+
+>>>>>>> 65f8163b5228f0fb22739b30eae12e896df52c14
 
 const app = express();
 
@@ -30,7 +35,9 @@ app.use(cors());
 //     next();
 // });
 
+app.use('/api/auth', authRouter);  // CHECK THIS
 app.use(signupRouter);
+<<<<<<< HEAD
 app.use(gameRouter);
 // app.use('/api/auth', authRouter);  // CHECK THIS
 
@@ -45,6 +52,23 @@ app.use(function errorHandler(error, req, res, next) {
     }
     res.status(500).json(response);
 });
+=======
+
+
+
+// app.use(function errorHandler(error, req, res, next) {
+//     let response;
+//     if (NODE_ENV === 'production') {
+//         response = { error: { message: 'server error' } };
+//     } 
+//     else {
+//         console.error(error);
+//         response = { message: error.message };
+//     }
+//     res.status(500).json(response);
+// });
+
+>>>>>>> 65f8163b5228f0fb22739b30eae12e896df52c14
 
 
 module.exports = app;
