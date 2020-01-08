@@ -85,13 +85,13 @@ describe('Auth Endpoints', function() {
         });
 
             it(`returns 200 JWT auth token using secret when valid credentials`, () => {
-                this.retries(5)
+                this.retries(10)
                 const expectedToken = jwt.sign(
                     { user_id: testUser.id},
                     process.env.JWT_SECRET,
                     {
                     subject: testUser.username,
-                    //   expiresIn: process.env.JWT_EXPIRY,
+                    //expiresIn: process.env.JWT_EXPIRY,
                     algorithm: 'HS256',
                     }
                 )
