@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const signupRouter = require('./signup/signupRouter');
+const gameRouter = require('./game/gameRouter');
 // const authRouter = require('auth/auth-router'); 
 
 const app = express();
@@ -30,6 +31,7 @@ app.use(cors());
 // });
 
 app.use(signupRouter);
+app.use(gameRouter);
 // app.use('/api/auth', authRouter);  // CHECK THIS
 
 app.use(function errorHandler(error, req, res, next) {
