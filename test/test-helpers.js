@@ -1,4 +1,4 @@
-const knex = require('knex')
+// const knext = require('knex')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
@@ -20,12 +20,6 @@ const testHelpers = {
     ]
   },
 
-  makeKnexInstance() {
-    return knex({
-      client: 'pg',
-      connection: process.env.DB_TEST_URL,
-    })
-  },
 
   cleanTables(db) {
     return db.raw('truncate users, stats, game_history restart identity cascade');
@@ -47,15 +41,12 @@ const testHelpers = {
     preppedUsers.forEach(user => {
       return db.into('users').insert(user)
     })
-    return db.transaction(async trx => {
-      await trx.into('users').insert(preppedUsers)
+    // return db.transaction(async trx => {
+    //   await trx.into('users').insert(preppedUsers)
 
-      await trx.raw(
-        `SELECT setval('users_id_seq', ?)`,
-        [users[users.length - 1].id],
-      )
-    })
+    //   await trx.raw(
+    //     `SELECT setval('users_id_seq', ?)`,
+    //     [users[users.length - 1].id],
+    //   )
+    // })
   }
-};
-
-module.exports = testHelpers

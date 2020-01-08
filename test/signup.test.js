@@ -2,18 +2,18 @@ require('dotenv').config();
 const knex = require('knex');
 const app = require('../src/app');
 const bcrypt = require('bcryptjs');
-const helpers = require('./test-helpers');
 
-describe.only('Signup Endpoints', () => {
+describe('/signup route', () => {
     let db;
-    const testUser = {username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'};
-    const testUser2 = {username:'test2', password:'CoMplex$1223', email:'someEmail2@gmail.com'};
+    let testUser = {username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'};
+    let testUser2 = {username:'test2', password:'CoMplex$1223', email:'someEmail2@gmail.com'};
 
     before('setup db', () => {
         db = knex({
             client: 'pg',
             connection: process.env.DB_TEST_URL
         });
+
         app.set('db', db);
     });
 
@@ -23,7 +23,8 @@ describe.only('Signup Endpoints', () => {
 
     after(() => db.destroy());
 
-    describe('POST /api/signup', () => {
+
+    describe('POST /signup Route', () => {
         describe('Username Tests', () => {
             it('returns 400 with error message if no username', () => {
                 return supertest(app)
@@ -40,6 +41,9 @@ describe.only('Signup Endpoints', () => {
         });
         
 
+        
+
+        
         describe('Password Tests', () => {
             it('returns 400 with error message if no password', () => {
                 return supertest(app)
@@ -73,6 +77,10 @@ describe.only('Signup Endpoints', () => {
             });
         });
 
+
+
+
+
         describe('Email tests', () => {
             it('returns 400 with error message if no email', () => {
                 return supertest(app)
@@ -100,6 +108,9 @@ describe.only('Signup Endpoints', () => {
             });
         });    
 
+
+
+
         describe('Full integration testing', () => {
             it('returns 201 if sucessful (FULL INTEGRATION TEST)', () => {
                 return supertest(app)
@@ -123,6 +134,7 @@ describe.only('Signup Endpoints', () => {
                     return db.into('users').insert(testUser);
                 });
 
+
                 it('returns 201 if sucessful (FULL INTEGRATION TEST)', () => {
                     return supertest(app)
                         .post('/signup')
@@ -141,6 +153,263 @@ describe.only('Signup Endpoints', () => {
             });
         });
 
+        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+                        .then(() => {
+                            db.from('users').select('*').where('username', 'test2').first()
+                            .then(user => {
+                                expect(user.id).to.equal(2);
+                                expect(user.username).to.equal('test2');
+                                expect(bcrypt.compare(user.password, '$2a$12$L3tZcc1G4pnQtoEdXdhHYOdVaH7b8lcmaiSRXznvsCYsz3TPnI1BS'));
+                                expect(user.email).to.equal('someEmail2@gmail.com');
+                            });
+                        });
+                });
+            });
+        });
+
+        
+        
+        
+
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
+        context('There are users in the database', () => {
+            beforeEach(() => {
+                return db.into('users').insert(testUser);
+            });
+
+            it('returns 400 if username is taken', () => {
+                return supertest(app)
+                    .post('/signup')
+                    .send({username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                    .expect(400, {error: 'Username is taken.'});
+            });
+            it('returns 400 if email is taken', () => {
+                return supertest(app)
+                .post('/signup')
+                .send({username:'test1', password:'CoMplex$1223', email:'someEmail@gmail.com'})
+                .expect(400, {error: 'Email is taken.'});
         context('There are users in the database', () => {
             beforeEach(() => {
                 return db.into('users').insert(testUser);
