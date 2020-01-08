@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const authRouter = require('./auth/auth-router'); 
 const signupRouter = require('./signup/signupRouter');
+const shipsRouter = require('./ships/ships-router');
 
 
 const app = express();
@@ -30,8 +31,9 @@ app.use(cors());
 //     next();
 // });
 
-app.use('/api/auth', authRouter);  // CHECK THIS
-app.use(signupRouter);
+// app.use('/api/auth', authRouter);  // CHECK THIS
+// app.use(signupRouter);
+app.use('/api/ships', shipsRouter);
 
 
 
