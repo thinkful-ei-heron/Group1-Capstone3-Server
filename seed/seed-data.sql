@@ -3,8 +3,8 @@ truncate "users", "stats", "game_history";
 
 insert into "users" ("username", "password", "email") 
 VALUES 
-    ('admin1', 'pass', 'someEmail@gmail.com'),
-    ('admin2', 'pass', 'someEmail2@gmail.com');
+    ('admin1', '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', 'someEmail@gmail.com'),
+    ('admin2', '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', 'someEmail2@gmail.com');
 
 insert into "stats" ("userid", "wins", "losses", "draws")
 values
