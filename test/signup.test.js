@@ -2,11 +2,12 @@ require('dotenv').config();
 const knex = require('knex');
 const app = require('../src/app');
 const bcrypt = require('bcryptjs');
+const helpers = require('./test-helpers');
 
-describe('/signup route', () => {
+describe.only('Signup Endpoints', () => {
     let db;
-    let testUser = {username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'};
-    let testUser2 = {username:'test2', password:'CoMplex$1223', email:'someEmail2@gmail.com'};
+    const testUser = {username:'test', password:'CoMplex$1223', email:'someEmail@gmail.com'};
+    const testUser2 = {username:'test2', password:'CoMplex$1223', email:'someEmail2@gmail.com'};
 
     before('setup db', () => {
         db = knex({
@@ -22,7 +23,7 @@ describe('/signup route', () => {
 
     after(() => db.destroy());
 
-    describe('POST /signup Route', () => {
+    describe('POST /api/signup', () => {
         describe('Username Tests', () => {
             it('returns 400 with error message if no username', () => {
                 return supertest(app)

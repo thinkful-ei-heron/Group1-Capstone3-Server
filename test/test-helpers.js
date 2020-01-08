@@ -23,7 +23,7 @@ const testHelpers = {
   makeKnexInstance() {
     return knex({
       client: 'pg',
-      connection: process.env.TEST_DB_URL,
+      connection: process.env.DB_TEST_URL,
     })
   },
 

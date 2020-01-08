@@ -37,7 +37,6 @@ const UserService = {
   serializeUser(user) {
     return {
       id: user.id,
-      name: user.name,
       username: user.username,
     }
   }
