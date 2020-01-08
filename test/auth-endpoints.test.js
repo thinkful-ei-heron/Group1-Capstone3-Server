@@ -91,39 +91,29 @@ describe('Auth Endpoints', function() {
                     { user_id: testUser.id},
                     process.env.JWT_SECRET,
                     {
-                      subject: testUser.username,
+                    subject: testUser.username,
                     //   expiresIn: process.env.JWT_EXPIRY,
-                      algorithm: 'HS256',
+                    algorithm: 'HS256',
                     }
-                  )
+                )
                 return supertest(app)
                     .post('/api/auth/token')
                     .set('Authorization', helpers.makeAuthHeader(testUser))
                     .send({username : 'test-1', password : 'pass'})
                     .expect(200, {
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
-                      authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
+                    authToken: expectedToken,
                     
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+                });
+                });
                 });
         });
     });

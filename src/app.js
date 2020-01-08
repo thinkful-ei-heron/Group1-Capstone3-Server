@@ -7,7 +7,6 @@ const helmet = require('helmet');
 const authRouter = require('./auth/auth-router'); 
 const signupRouter = require('./signup/signupRouter');
 
-
 const app = express();
 
 const morganOption = (NODE_ENV === 'production')
@@ -19,8 +18,8 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors());
 
-app.use('/api/user', userRouter);
-app.use(errorHandler);
+//app.use('/api/user', userRouter);
+//app.use(errorHandler);
 
 // app.use(function validateBearerToken(req, res, next) {
 //     const apiToken = process.env.API_TOKEN;
