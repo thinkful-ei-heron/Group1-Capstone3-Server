@@ -13,7 +13,6 @@ describe('/signup route', () => {
             client: 'pg',
             connection: process.env.DB_TEST_URL
         });
-
         app.set('db', db);
     });
 
@@ -22,7 +21,6 @@ describe('/signup route', () => {
     afterEach(() => db.raw('truncate users, stats restart identity cascade'));
 
     after(() => db.destroy());
-
 
     describe('POST /signup Route', () => {
         describe('Username Tests', () => {
@@ -41,9 +39,6 @@ describe('/signup route', () => {
         });
         
 
-        
-
-        
         describe('Password Tests', () => {
             it('returns 400 with error message if no password', () => {
                 return supertest(app)
@@ -77,10 +72,6 @@ describe('/signup route', () => {
             });
         });
 
-
-
-
-
         describe('Email tests', () => {
             it('returns 400 with error message if no email', () => {
                 return supertest(app)
@@ -108,9 +99,6 @@ describe('/signup route', () => {
             });
         });    
 
-
-
-
         describe('Full integration testing', () => {
             it('returns 201 if sucessful (FULL INTEGRATION TEST)', () => {
                 return supertest(app)
@@ -134,7 +122,6 @@ describe('/signup route', () => {
                     return db.into('users').insert(testUser);
                 });
 
-
                 it('returns 201 if sucessful (FULL INTEGRATION TEST)', () => {
                     return supertest(app)
                         .post('/signup')
@@ -152,10 +139,6 @@ describe('/signup route', () => {
                 });
             });
         });
-
-        
-        
-        
 
         context('There are users in the database', () => {
             beforeEach(() => {

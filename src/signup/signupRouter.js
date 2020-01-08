@@ -4,8 +4,6 @@ const xss = require('xss');
 
 const signupRouter = express.Router();
 
-
-
 signupRouter
     .post('/signup', (req, res, next) => {
     let db = req.app.get('db');

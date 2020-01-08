@@ -1,7 +1,6 @@
 require('dotenv').config();
 const knex = require('knex');
 const app = require('../src/app');
-// const API_TOKEN = process.env.API_TOKEN;
 const jwt = require('jsonwebtoken');
 const helpers = require('./test-helpers');
 const bcrypt = require('bcryptjs');
@@ -79,10 +78,10 @@ describe('Auth Endpoints', function() {
         describe(`PATCH /api/auth/token`, () => {
             beforeEach('insert users', () => {
             return db.into('users').insert({...testUser,password: testPass});
-            // helpers.seedUsers(
-            //     db,
-            //     testUsers,
-            // )
+            helpers.seedUsers(
+                db,
+                testUsers,
+            )
         });
 
             it(`returns 200 JWT auth token using secret when valid credentials`, () => {
