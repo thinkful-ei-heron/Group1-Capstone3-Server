@@ -1,5 +1,5 @@
 begin;
-truncate "users", "stats", "game_history";
+truncate "users", "stats", "game_history", "room_queue" restart identity cascade;
 
 insert into "users" ("username", "password", "email") 
 VALUES 
@@ -12,7 +12,5 @@ values
     (2, 0, 0, 0);
 
 
-SELECT setval('users_id_seq', 1);
-SELECT setval('stats_id_seq', (SELECT MAX(id) from "stats"));
-SELECT setval('game_history_id_seq', (SELECT MAX(id) from "game_history"));
+
 commit; 

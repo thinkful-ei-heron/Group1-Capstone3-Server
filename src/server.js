@@ -2,6 +2,7 @@ const app = require('./app');
 const {PORT, DB_URL} = require('./config');
 const knex = require('knex');
 const socket = require('socket.io');
+const socketRouter = require('./socket/socketRouter');
 
 const db = knex({
     client: 'pg',
@@ -13,6 +14,11 @@ app.set('db', db);
 const server = app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
+
+
+
+
+
 
 const io = socket(server, {
     handlePreflightRequest: function (req, res) {
@@ -27,23 +33,16 @@ const io = socket(server, {
 });
 
 io.use((socket, next) => {
-    console.log(socket.handshake.headers.authorization)
+    //console.log(socket.handshake.headers.authorization);
     let jwt = socket.handshake.headers.authorization;
     if(jwt !== 'Bearer thisismyjwt') {
         socket.disconnect(true);
     }else 
     return next();
-})
-
-io.on('connection', function (socket) {
-    
-    console.log(socket.handshake.headers);
-    socket.on('shot', (data) => {
-        console.log(data)
-        console.log(socket.handshake.extraHeaders);
-        socket.emit('shot', data);
-    });
 });
+
+io.use(socketRouter(io, db));
+
 
 
 app.set('io', io);
