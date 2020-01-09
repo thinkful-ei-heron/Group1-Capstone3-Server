@@ -7,7 +7,15 @@ const GamesService = require('./GamesService');
 gamesRouter
   .route('/')
   //.all(requireAuth)
-  .get((req,res,next)=>{
+  .get(jsonBodyParser, (req,res,next)=>{
+    const knexInstance = req.app.get('db');
+    const {userId} = req.body;
+    if(!userId){
+      return res.status(400).json({error:'must send userId'});
+    }
+    return GamesService.getAllActiveGames(knexInstance, userId).then(result => {
+      return res.status(200).json(result);
+    });
     //maybe this endpoint could get all user's active games?
     //we also need an endpoint to retrieve all of the game data from a game being resumed.
   })
