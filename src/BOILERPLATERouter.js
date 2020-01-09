@@ -20,6 +20,10 @@
 
 //     //checks to see if id provided is a valid UUID
 //     if (!id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+<<<<<<< HEAD
+//         logger.error('Must provide valid UUID');
+=======
+>>>>>>> master
 //         return res.status(400).json({ message: 'Must provide a valid ID to get' });
 //     }
 

@@ -8,7 +8,7 @@ const testHelpers = {
       {
         id: 1,
         username: 'test-1',
-        password: 'pass',
+        password: 'pass', 
         email: 'test1Email@gmail.com',
       },
       {
@@ -50,6 +50,6 @@ const testHelpers = {
     //   )
     // })
   }
-};
+}
 
-module.exports = testHelpers
+module.exports = testHelpers;

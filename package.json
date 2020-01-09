@@ -2,7 +2,7 @@
   "name": "capstone3",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
     "test": "mocha --require test/configTest.js",
     "testing": "mocha -w --require test/configTest.js",
@@ -10,6 +10,7 @@
     "dev": "nodemon ./src/server",
     "migrate": "postgrator --config postgrator-config.js",
     "migrate:test": "env NODE_ENV=test npm run migrate",
+    "migrate:production":"env SSL=true DATABASE_URL=$(heroku config:get DATABASE_URL) npm run migrate",
     "predeploy": "npm audit",
     "deploy": "git push heroku master"
   },
