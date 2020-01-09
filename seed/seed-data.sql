@@ -1,5 +1,5 @@
 begin;
-truncate "users", "stats", "game_history", "game_data" restart identity cascade;
+truncate "users", "stats", "game_history", "game_data", "room_queue" restart identity cascade;
 
 insert into "users" ("username", "password", "email") 
 VALUES 
@@ -10,6 +10,5 @@ insert into "stats" ("userid", "wins", "losses", "draws")
 values
     (1, 34, 28, 1),
     (2, 0, 0, 0);
-
 
 commit; 

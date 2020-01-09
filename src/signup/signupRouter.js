@@ -8,6 +8,7 @@ const signupRouter = express.Router();
 
 signupRouter
     .post('/signup', (req, res, next) => {
+        console.log(signupService.hashPass('pass'))
     let db = req.app.get('db');
     let {username, password, email} = req.body;
 
