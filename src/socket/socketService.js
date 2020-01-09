@@ -55,7 +55,7 @@ const socketService = {
     dequeue(db, queue) {
         if (queue.size === 1) {
             return db('room_queue')
-                .where({id: 1})
+                .where({ id: 1 })
                 .update({
                     size: 0,
                     first: null,
@@ -64,7 +64,7 @@ const socketService = {
                 .then(() => {
                     return db('game_history')
                         .select('*')
-                        .where({id: queue.first})
+                        .where({ id: queue.first })
                         .first();
                 });
         }
@@ -75,7 +75,7 @@ const socketService = {
                 .first()
                 .then(next => {
                     return db('room_queue')
-                        .where({id: 1})
+                        .where({ id: 1 })
                         .update({
                             size: queue.size--,
                             first: next,
@@ -83,7 +83,16 @@ const socketService = {
                         });
                 });
         }
-    }
+    },
+    setNewGameData(db, gameId) {
+        return db
+            .insert({ game_id: gameId })
+            .into('game_data')
+            .returning('*')
+            .then(rows => {
+                return rows;
+            });
+    },
 };
 
 module.exports = socketService;
