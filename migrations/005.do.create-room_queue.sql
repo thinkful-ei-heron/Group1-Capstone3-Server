@@ -7,5 +7,7 @@ create table if not exists room_queue (
     last integer references game_history(id) default null
 );
 
-
+insert into "room_queue" ("size") 
+    values (0);
+    
 commit;
