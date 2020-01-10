@@ -11,8 +11,7 @@ function checkAuth (req, res, next) {
 
     try {
         let verified = jwt.verify(token, process.env.JWT_SECRET, {algorithms: ['HS256']});
-
-        authService.getWithUsername(req.app.get('db'), verified.sub)
+        authService.getUserWithUserName(req.app.get('db'), verified.sub)
             .then(user => {
                 if(user) {
                     req.app.set('user', user);

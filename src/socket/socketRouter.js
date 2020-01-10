@@ -47,6 +47,7 @@ const socketRouter = function (io, db) {
                 //send back game data to client
                
                 socket.join(room);
+                socket.emit('reconnected', {});
             }
         });
 
