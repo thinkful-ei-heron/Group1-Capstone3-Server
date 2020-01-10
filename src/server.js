@@ -1,5 +1,5 @@
 const app = require('./app');
-const {PORT, DATABASE_URL} = require('./config');
+const {PORT, DATABASE_URL, CLIENT_URL} = require('./config');
 const knex = require('knex');
 const socket = require('socket.io');
 const socketRouter = require('./socket/socketRouter');
@@ -23,7 +23,7 @@ const io = socket(server, {
     handlePreflightRequest: function (req, res) {
         var headers = {
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Origin': CLIENT_URL,
           'Access-Control-Allow-Credentials': true
         };
         res.writeHead(200, headers);
