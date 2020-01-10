@@ -1,5 +1,3 @@
-//const gameService = require('./gameService');
-const express = require('express');
 const xss = require('xss');
 const io = require('../server');
 const socket = require('socket.io');
@@ -7,48 +5,37 @@ const socketService = require('./socketService');
 const ShipsService = require('../ships/ShipsService');
 
 const socketRouter = function (io, db) {
-
+    
     io.on('connection', function (socket) {
+        //console.log('connected', socket.id);
 
-        console.log('connected', socket.id);
-        socket.on('shot', (data) => {
-            console.log(data)
-            socket.emit('shot', data);
-        });
-
-
-        // need to send back which player they are.
+        //creates/connects sockets to rooms
         socket.on('join_room', async (room) => {
+            let playerId = socket.userInfo.id;
+
             if (room === 'random') {
                 let room = await socketService.findRoom(db);
-                console.log(room);
+                
                 //check to see if there are any rooms in the queue
-
                 if (room.size) {
-                    let roomName = await socketService.dequeue(db, room)
-                    console.log(roomName.room_id)
+                    
+                    let roomName = await socketService.dequeue(db, room);
+
+                    await socketService.updatePlayer2(db, playerId, roomName.id);
+
                     socket.join(roomName.room_id);
                     socket.emit('joined', { room: roomName.room_id, player: 'player2', gameId: roomName.id })
-                    //socket.join(queue.dequeue())
-                    //add player2 id, room id, to game_history
-                    //socket.emit(room name)
                 }
                 else {
-                    let playerId = 1;
-                    //fix player id
 
                     let randomString = `${Math.floor(Math.random() * 1000)}`;
                     let gameHistoryId = await socketService.makeRoom(db, playerId, randomString);
-                    //console.log(gameHistoryId);
+                    
                     await socketService.enqueue(db, gameHistoryId.id);
-                    await socketService.setNewGameData(db, gameHistoryId.id)
-                    console.log(randomString);
+                    await socketService.setNewGameData(db, gameHistoryId.id);
+
                     socket.join(randomString);
                     socket.emit('joined', { room: randomString, player: 'player1', gameId: gameHistoryId.id });
-                    //socket.join that random
-                    //add that room to a queue of rooms with only one person in them.
-                    //add player1 id, room id, to game_history
-                    //socket.emit(room name)
                 }
 
 
@@ -58,13 +45,13 @@ const socketRouter = function (io, db) {
                 //make sure person is allowed in the room
                 //get game-data for room with room id
                 //send back game data to client
-                console.log('To room: ', room)
+               
                 socket.join(room);
             }
         });
 
 
-
+        //Performs the check to see if a given shot is a hit or miss, updates db accordingly
         socket.on('fire', async (data) => {
             const { target, playerNum, gameId, roomId } = data;
 
@@ -114,16 +101,16 @@ const socketRouter = function (io, db) {
 
                 })
                     .then(() =>  {
-                        //socket.broadcast.to(roomId).emit('response', {...result, playerNum, target})
-                        io.to(roomId).emit('response', {...result, playerNum, target})
-                    });
-
                         // {
                         //     result: 'hit/miss'
                         //     ship: 'shipname/null'
                         //     playernum: 'player1/2'
                         //     target: 'A1'
                         // }
+                        io.to(roomId).emit('response', {...result, playerNum, target})
+                    });
+
+                        
 
 
             } else {

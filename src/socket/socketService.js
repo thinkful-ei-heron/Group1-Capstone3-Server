@@ -4,6 +4,8 @@ const socketService = {
             .select('*')
             .first();
     },
+
+
     makeRoom(db, playerId, roomName) {
         return db.into('game_history')
             .insert({
@@ -13,6 +15,17 @@ const socketService = {
             .returning('*')
             .then(rows => rows[0]);
     },
+
+
+    updatePlayer2(db, playerId, gameId) {
+        return db('game_history')
+        .where({ id: gameId })
+        .update({
+            player2: playerId
+        });
+    },
+
+
     enqueue(db, gameHistId) {
         let queue = db('room_queue')
             .select('*')
@@ -52,6 +65,8 @@ const socketService = {
             }
         });
     },
+
+
     dequeue(db, queue) {
         if (queue.size === 1) {
             return db('room_queue')
@@ -84,6 +99,8 @@ const socketService = {
                 });
         }
     },
+
+    
     setNewGameData(db, gameId) {
         return db
             .insert({ game_id: gameId })

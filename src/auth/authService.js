@@ -4,13 +4,10 @@ const config  = require('../config');
 
 const AuthService = { 
   getUserWithUserName(db, username) {
-    console.log(username)
     return db('users')
       .select('*')
       .where('username', username)
       .first();
-      // .returning('*')
-      // .then(rows => rows[0])
   },
   comparePasswords(password, hash) {
     return bcrypt.compare(password,hash);
@@ -19,7 +16,7 @@ const AuthService = {
     return jwt.sign(payload, config.JWT_SECRET, {
       subject,  
       algorithm: 'HS256',
-    })
+    });
   },
   verifyJwt(token) {
     return jwt.verify(token, config.JWT_SECRET, {

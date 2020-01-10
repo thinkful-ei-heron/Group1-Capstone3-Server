@@ -1,12 +1,11 @@
-const express = require('express')
-const AuthService = require('./auth-service')
-const { requireAuth } = require('../middleware/jwt-auth')
+const express = require('express');
+const AuthService = require('./authService');
 
-const authRouter = express.Router()
-const jsonBodyParser = express.json()
+const loginRouter = express.Router();
+const jsonBodyParser = express.json();
 
-authRouter
-  .route('/token')
+loginRouter
+  .route('/')
   .post(jsonBodyParser, async (req, res, next) => {
     const { username, password } = req.body
     const loginUser = { username, password}
@@ -29,7 +28,7 @@ authRouter
 
       if(!dbUser)
         return res.status(400).json({
-          error: 'Incorrect username or password!', // trial error org: user 
+          error: 'Incorrect username or password!', 
         })
 
       const compareMatch = await AuthService.comparePasswords(
@@ -39,7 +38,7 @@ authRouter
 
       if(!compareMatch)
         return res.status(400).json({
-          error: 'Incorrect username or password!' // trial error switch org: pass
+          error: 'Incorrect username or password!' 
         })
       const subject = dbUser.username
       const payload = { 
@@ -55,15 +54,4 @@ authRouter
     } 
   })
 
-  // .put(requireAuth, (req, res) => {
-  //   const sub = req.user.username
-  //   const payload = {
-  //     user_id: req.user.id,
-  //     name: req.user.name,
-  //   }
-  //   res.send({
-  //     authToken: AuthService.createJwt(sub, payload),
-  //   })
-  // })
-
-module.exports = authRouter
+module.exports = loginRouter

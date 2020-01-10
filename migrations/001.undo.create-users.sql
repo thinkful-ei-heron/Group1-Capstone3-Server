@@ -6,4 +6,5 @@ drop type if exists gameStatus;
 drop type if exists playerTurn;
 drop table if exists stats;
 drop table if exists users;
+drop table if exists schemaversion;
 commit;

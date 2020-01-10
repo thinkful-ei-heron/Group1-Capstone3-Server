@@ -4,10 +4,11 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-const authRouter = require('./auth/auth-router'); 
+const loginRouter = require('./auth/loginRouter'); 
 const signupRouter = require('./signup/signupRouter');
 const shipsRouter = require('./ships/ships-router');
 const gamesRouter = require('./games/games-router');
+const checkAuth = require('./auth/checkAuth');
 
 const app = express();
 
@@ -20,15 +21,11 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors());
 
-//app.use('/api/user', userRouter);
-//app.use(errorHandler);
 
-
-// app.use('/api/auth', authRouter);  // CHECK THIS
-// app.use(signupRouter);
-app.use('/api/games', gamesRouter);
-app.use('/api/ships', shipsRouter);
-
+app.use('/api/login', loginRouter);  
+app.use('/api/signup', signupRouter);
+app.use('/api/games', checkAuth, gamesRouter);
+app.use('/api/ships', checkAuth,  shipsRouter);
 
 
 app.use(function errorHandler(error, req, res, next) {

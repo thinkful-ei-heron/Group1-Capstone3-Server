@@ -1,7 +1,6 @@
 require('dotenv').config();
 const knex = require('knex');
 const app = require('../src/app');
-// const API_TOKEN = process.env.API_TOKEN;
 const jwt = require('jsonwebtoken');
 const helpers = require('./test-helpers');
 const bcrypt = require('bcryptjs');
@@ -15,7 +14,7 @@ describe('Auth Endpoints', function() {
     before('make knext instance', () => {
         db = knex({
             client: 'pg',
-            connection: process.env.DB_TEST_URL
+            connection: process.env.TEST_DATABASE_URL
         });
 
         app.set('db', db);
@@ -31,7 +30,7 @@ describe('Auth Endpoints', function() {
     afterEach('cleanup',() => helpers.cleanTables(db));
 
 
-    describe('POST /api/auth/token', () => {
+    describe('POST /api/login', () => {
         beforeEach('insert users', () => { 
             helpers.seedUsers(
                 db,
@@ -52,7 +51,7 @@ describe('Auth Endpoints', function() {
             
 
                 return supertest(app)
-                    .post('/api/auth/token')
+                    .post('/api/login')
                     .send(loginAttemptBody)
                     .expect(400, { error:`Missing ${field} in request body`,
                     })
@@ -62,7 +61,7 @@ describe('Auth Endpoints', function() {
             it(`returns 400 and 'invalid username or password' when bad username`, () => {
                 const userInvalidUser = { username: 'user-not', password: 'existy' }
                 return supertest(app)
-                    .post('/api/auth/token')
+                    .post('/api/login')
                     .send(userInvalidUser)
                     .expect(400, { error:`Incorrect username or password!`})
             })
@@ -70,23 +69,19 @@ describe('Auth Endpoints', function() {
             it(`returns 400 and 'invalid username or password' when bad password`, () => {
                 const userInvalidPass = { username: testUser.username, password: 'incorrect' }
                 return supertest(app)
-                    .post('/api/auth/token')
+                    .post('/api/login')
                     .send(userInvalidPass)
                     .expect(400, { error:`Incorrect username or password!`})
             })
     })
 
-        describe(`PATCH /api/auth/token`, () => {
+        describe(`POST /api/login`, () => {
             beforeEach('insert users', () => {
             return db.into('users').insert({...testUser,password: testPass});
-            // helpers.seedUsers(
-            //     db,
-            //     testUsers,
-            // )
             });
 
             it(`returns 200 JWT auth token using secret when valid credentials`, () => {
-                this.retries(5)
+                this.retries(10);
                 const expectedToken = jwt.sign(
                     { user_id: testUser.id},
                     process.env.JWT_SECRET,
@@ -97,21 +92,11 @@ describe('Auth Endpoints', function() {
                     }
                 )
                 return supertest(app)
-                    .post('/api/auth/token')
+                    .post('/api/login')
                     .set('Authorization', helpers.makeAuthHeader(testUser))
                     .send({username : 'test-1', password : 'pass'})
                     .expect(200, {
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                        authToken: expectedToken,
-                    
+                        authToken: expectedToken, 
                 });
             });
         })

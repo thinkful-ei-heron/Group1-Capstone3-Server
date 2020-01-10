@@ -11,4 +11,7 @@ values
     (1, 34, 28, 1),
     (2, 0, 0, 0);
 
+insert into "room_queue" ("size") 
+values (0);
+
 commit; 

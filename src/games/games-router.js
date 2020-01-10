@@ -1,37 +1,45 @@
 const express = require('express');
 const gamesRouter = express.Router();
-const jsonBodyParser = express.json();
 const GamesService = require('./GamesService');
 
 
 gamesRouter
+  //in future change this to just /games endpoint and get the user id from the req object.
   .route('/')
-  //.all(requireAuth)
-  .get(jsonBodyParser, (req,res,next)=>{
+  .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const {userId} = req.body;
-    if(!userId){
-      return res.status(400).json({error:'must send userId'});
-    }
+    const userId = req.app.get('user').id;
+    
     return GamesService.getAllActiveGames(knexInstance, userId).then(result => {
-      return res.status(200).json(result);
+      return res.status(200).json({ result, userId });
     });
-    //maybe this endpoint could get all user's active games?
-    //we also need an endpoint to retrieve all of the game data from a game being resumed.
-  })
-  // .post(jsonBodyParser, (req,res,next) => {
-  //   //start new game.
-  //   //this endpoint creates a new game in the database in game_history as long as we have two user id's
-  //   // that we can pair together. It is currently hardcoded (with user id's 1 and 2) for testing purposes only.
-  //   //After initiating the game_history data it also initiates a new entry in game_data associated with the game_id.
-  //   const knexInstance = req.app.get('db');
-  //   GamesService.startNewGame(knexInstance, 1, 2)
-  //   .then(newGame => {
-  //     GamesService.setNewGameData(knexInstance, newGame[0].id);
-  //     return res.status(200).json(newGame);
-  //   });
-  // });
+  });
+
+gamesRouter
+  .route('/activegame/:gameId/:playerNum')
+  .get((req, res, next) => {
+    const knexInstance = req.app.get('db');
+    const { gameId, playerNum } = req.params;
+
+    GamesService.retrieveGameData(knexInstance, gameId).then(data => {
+      let gameData = data[0];
+      if(playerNum === 'player1'){
+        gameData.player2_ships = 'private';
+        gameData.player1_ships = JSON.parse(gameData.player1_ships);
+      }else{
+        gameData.player1_ships = 'private';
+        gameData.player2_ships = JSON.parse(gameData.player2_ships);
+      }
+        gameData.player1_hits = JSON.parse(gameData.player1_hits);
+        gameData.player2_hits = JSON.parse(gameData.player2_hits);
+        gameData.player1_misses = JSON.parse(gameData.player1_misses);
+        gameData.player2_misses = JSON.parse(gameData.player2_misses);
+        gameData.currentUser = playerNum;
+
+      res.status(200).json(gameData);
+    });
+  });
 
 
 
-  module.exports = gamesRouter;
+module.exports = gamesRouter;

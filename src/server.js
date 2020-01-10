@@ -1,12 +1,14 @@
 const app = require('./app');
-const {PORT, DB_URL} = require('./config');
+const {PORT, DATABASE_URL} = require('./config');
 const knex = require('knex');
 const socket = require('socket.io');
 const socketRouter = require('./socket/socketRouter');
+const authService = require('./auth/authService');
+const jwt = require('jsonwebtoken');
 
 const db = knex({
     client: 'pg',
-    connection: DB_URL
+    connection: DATABASE_URL
 });
 
 app.set('db', db);
@@ -15,10 +17,7 @@ const server = app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
 
-
-
-
-
+//------------------------------------------------------------------------------------------------------------
 
 const io = socket(server, {
     handlePreflightRequest: function (req, res) {
@@ -32,13 +31,24 @@ const io = socket(server, {
       }
 });
 
+//Authorize the sockets
 io.use((socket, next) => {
-    //console.log(socket.handshake.headers.authorization);
-    let jwt = socket.handshake.headers.authorization;
-    if(jwt !== 'Bearer thisismyjwt') {
-        socket.disconnect(true);
-    }else 
-    return next();
+    let auth = socket.handshake.headers.authorization;
+    if(!auth.startsWith('Bearer ')) socket.disconnect(true);
+
+    let token = auth.split(' ')[1];
+    let verified = jwt.verify(token, process.env.JWT_SECRET, {algorithms: ['HS256']});
+    
+    authService.getUserWithUserName(db, verified.sub)
+        .then(user => {
+            if(user) {
+               
+                socket.userInfo = user;
+                next();
+            }
+            else socket.disconnect(true);
+        });
+
 });
 
 io.use(socketRouter(io, db));

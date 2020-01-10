@@ -41,14 +41,7 @@ const testHelpers = {
     preppedUsers.forEach(user => {
       return db.into('users').insert(user)
     })
-    // return db.transaction(async trx => {
-    //   await trx.into('users').insert(preppedUsers)
-
-    //   await trx.raw(
-    //     `SELECT setval('users_id_seq', ?)`,
-    //     [users[users.length - 1].id],
-    //   )
-    // })
+  
   }
 }
 

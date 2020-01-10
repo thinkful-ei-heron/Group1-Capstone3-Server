@@ -5,8 +5,7 @@ const xss = require('xss');
 const signupRouter = express.Router();
 
 signupRouter
-    .post('/signup', (req, res, next) => {
-        console.log(signupService.hashPass('pass'))
+    .post('/', (req, res, next) => {
     let db = req.app.get('db');
     let {username, password, email} = req.body;
 
