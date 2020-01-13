@@ -36,7 +36,7 @@ gamesRouter
         gameData.player2_misses = JSON.parse(gameData.player2_misses);
         gameData.currentUser = playerNum;
 
-      res.status(200).json(gameData);
+      res.status(200).json(gameData); 
     });
   });
 
