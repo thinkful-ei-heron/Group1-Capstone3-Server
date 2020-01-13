@@ -108,7 +108,14 @@ const socketRouter = function (io, db) {
                         //     playernum: 'player1/2'
                         //     target: 'A1'
                         // }
-                        io.to(roomId).emit('response', {...result, playerNum, target})
+
+                        //switch turns
+                           // .then
+
+                        socketService.swapTurn(db, gameId)
+                            .then(() => {
+                                io.to(roomId).emit('response', {...result, playerNum, target});
+                            });
                     });
 
                         
@@ -150,8 +157,80 @@ const socketRouter = function (io, db) {
 
 
                 })
-                    .then(() => io.to(roomId).emit('response', {...result, playerNum, target}));
+                    .then(() =>{
+
+
+                        socketService.swapTurn(db, gameId)
+                            .then(() => {
+                                io.to(roomId).emit('response', {...result, playerNum, target});
+                            });
+                    });
             }
+        })
+
+
+
+
+
+
+        socket.on('ships_ready',  room =>{ 
+            // if(tempArray.length === 0){
+            //     tempArray.push(player)
+            //     io.in(room).emit('player_ready', (player + ' is ready!'))
+            // } else {
+            //     if(tempArray.indexOf(player) === (-1)){
+            //         tempArray.push(player)
+            //         io.in(room).emit('player_ready', (player + ' is ready!'))
+            //     }
+            //     if(tempArray.length === 2){
+            //         io.in(room).emit('player_ready', (`Both Player's Ships Have Been Set!`))
+            //     }
+            // }
+            // console.log(player + ' :player' + room + ' :room')
+            // io.in(room).emit('player_ready', (player + ' is ready!'))
+            socket.broadcast.to(room).emit('opponent_ready', {});
+        })
+
+        socket.on('seek_status_update', (data) => {
+            console.log(data+ ' is my room')
+            if(!firstMove){
+                firstMove=true;
+                let randomNum = 0
+                randomNum = (Math.floor((Math.random()*2)+1))
+                if(bothPlayersJoined){
+                    console.log(randomNum + 'is a random Number')
+                    io.in(data).emit('update', randomNum)
+                        //socket.emit
+                }
+            } else{
+                let number = randomNum
+                console.log(number + ' is next')
+                number === 1 ? randomNum = 2 : randomNum = 1
+                io.in(data).emit('update', randomNum)
+            }
+        })
+
+
+
+
+        socket.on('chat-message', message => {
+
+        }) 
+
+
+
+
+
+
+
+
+
+
+
+        socket.on('disconnect', () => {
+            console.log('Someone has left a room')
+            bothPlayersJoined=false
+            io.sockets.emit('left', 'The other Player has left' )
         })
     });
 };

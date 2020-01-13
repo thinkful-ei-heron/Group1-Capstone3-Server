@@ -110,6 +110,24 @@ const socketService = {
                 return rows;
             });
     },
+
+
+
+    swapTurn(db, gameId) {
+        return db('game_history')
+            .where({ id: gameId })
+            .select('turn')
+            .first()
+            .then(turn => {
+                let newTurn = (turn.turn === 'player1') ? 'player2': 'player1';
+
+                return db('game_history')
+                    .where({ id: gameId })
+                    .update({
+                        turn: newTurn
+                    });
+            });
+    }
 };
 
 module.exports = socketService;
