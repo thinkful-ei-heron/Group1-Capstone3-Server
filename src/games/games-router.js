@@ -24,10 +24,10 @@ gamesRouter
     GamesService.retrieveGameData(knexInstance, gameId).then(data => {
       let gameData = data[0];
       if(playerNum === 'player1'){
-        gameData.player2_ships = 'private';
+        gameData.player2_ships = gameData.player2_ships ? true : false;
         gameData.player1_ships = JSON.parse(gameData.player1_ships);
       }else{
-        gameData.player1_ships = 'private';
+        gameData.player1_ships = gameData.player1_ships ? true : false;
         gameData.player2_ships = JSON.parse(gameData.player2_ships);
       }
         gameData.player1_hits = JSON.parse(gameData.player1_hits);
@@ -36,7 +36,7 @@ gamesRouter
         gameData.player2_misses = JSON.parse(gameData.player2_misses);
         gameData.currentUser = playerNum;
 
-      res.status(200).json(gameData);
+      res.status(200).json(gameData); 
     });
   });
 
