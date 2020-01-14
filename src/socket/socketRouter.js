@@ -3,6 +3,7 @@ const io = require('../server');
 const socket = require('socket.io');
 const socketService = require('./socketService');
 const ShipsService = require('../ships/ShipsService');
+const GamesService = require('../games/GamesService');
 
 const socketRouter = function (io, db) {
     
@@ -55,12 +56,25 @@ const socketRouter = function (io, db) {
         //Performs the check to see if a given shot is a hit or miss, updates db accordingly
         socket.on('fire', async (data) => {
             const { target, playerNum, gameId, roomId } = data;
-
+            
             if (!playerNum || !gameId) {
                 return res.status(400).json({ error: 'must provide player number and game id' });
             }
 
+            //the following code gives us access to the user's id and the opponent's id. which we will need
+            // for updating the stats table for each player
+            let playerId = socket.userInfo.id;
+            let opponentId;
+            GamesService.getPlayerIds(db, gameId).then(res => {
+                if(res.player1 === playerId){
+                    opponentId = res.player2
+                }else{
+                    opponentId = res.player1
+                } 
+            })
+
             let result;
+            let winner=null;
             //the overarching if/else is based on if the firing user is player 1 or player 2
             //after determining if the user is player 1 or 2, we access the opponents ships.
             //then we check to see if we hit one of the opponent's ships.
@@ -81,6 +95,15 @@ const socketRouter = function (io, db) {
                             if (res.player1_hits !== null && res.player1_hits !== '') {
                                 let currentHits = JSON.parse(res.player1_hits);
                                 newValue = [...currentHits, target];
+                                //if the length of newValue is the length of all the ships combined then
+                                // the player has won. Need to change game status to complete in the db 
+                                if(newValue.length === 17){
+                                    winner = 'player1'
+                                    GamesService.updateGameData(db, gameId, winner)
+                                    GamesService.endGame(db, gameId)
+                                    GamesService.updateWinnerStats(db, playerId)
+                                    GamesService.updateLoserStats(db, opponentId)
+                                }
                             }
                             return ShipsService.addToHitsPlayer1(db, gameId, JSON.stringify(newValue));
                         });
@@ -115,6 +138,10 @@ const socketRouter = function (io, db) {
                         socketService.swapTurn(db, gameId)
                             .then(() => {
                                 io.to(roomId).emit('response', {...result, playerNum, target});
+                                //if the win message exists, then transmit it
+                                if(winner){
+                                    io.to(roomId).emit('win', {winner});
+                                }
                             });
                     });
 
@@ -135,6 +162,13 @@ const socketRouter = function (io, db) {
                             if (res.player2_hits !== null && res.player2_hits !== '') {
                                 let currentHits = JSON.parse(res.player2_hits);
                                 newValue = [...currentHits, target];
+                                if(newValue.length === 17){
+                                    winner = 'player2'
+                                    GamesService.updateGameData(db, gameId, winner)
+                                    GamesService.endGame(db, gameId)
+                                    GamesService.updateWinnerStats(db, playerId)
+                                    GamesService.updateLoserStats(db, opponentId)
+                                }
                             }
                             return ShipsService.addToHitsPlayer2(db, gameId, JSON.stringify(newValue));
                         });
@@ -163,6 +197,10 @@ const socketRouter = function (io, db) {
                         socketService.swapTurn(db, gameId)
                             .then(() => {
                                 io.to(roomId).emit('response', {...result, playerNum, target});
+                                //if a winner exists, then transmit it
+                                if(winner){
+                                    io.to(roomId).emit('win', {winner});
+                                }
                             });
                     });
             }

@@ -60,6 +60,8 @@ signupRouter
                             return signupService.insert(db, post)
                                 .then(resp => {
                                     if(resp) {
+                                        //add the stats row to start tracking for a new user
+                                        signupService.createNewStatsRow(db, resp.id);
                                         return res.status(201).end();
                                     }
                                 });

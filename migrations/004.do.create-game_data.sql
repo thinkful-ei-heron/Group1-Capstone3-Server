@@ -6,5 +6,6 @@ CREATE TABLE game_data (
   player1_hits text,
   player1_misses text,
   player2_hits text,
-  player2_misses text
+  player2_misses text,
+  winner text default null
 );
