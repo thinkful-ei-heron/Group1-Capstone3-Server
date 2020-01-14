@@ -21,29 +21,29 @@ const socketRouter = function (io, db) {
 
                     let playingYourself = await socketService.checkPlayingYourself(db, room.first, playerId);
 
-                    // if (playingYourself.player1 === playerId) {
+                    if (playingYourself.player1 === playerId) {
                        
-                    //     socket.emit('error-message', { error: 'You can only have one game in the queue at a given time. Please wait for someone else to match against you.' });
+                        socket.emit('error-message', { error: 'You can only have one game in the queue at a given time. Please wait for someone else to match against you.' });
 
-                    // } else {
+                    } else {
                         let roomName = await socketService.dequeue(db, room);
 
                         await socketService.updatePlayer2(db, playerId, roomName.id);
 
                         socket.join(roomName.room_id);
                         socket.emit('joined', { room: roomName.room_id, player: 'player2', gameId: roomName.id })
-                    // }
+                    }
                 }
                 else {
 
                     let activeGames = await socketService.checkNumOfGamesActive(db, playerId)
 
                     
-                    // if (activeGames.length > 10) {
+                    if (activeGames.length > 10) {
                         
-                    //     socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
+                        socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
 
-                    // } else {
+                    } else {
 
                         let randomString = `${Math.floor(Math.random() * 1000)}`;
                         let gameHistoryId = await socketService.makeRoom(db, playerId, randomString);
@@ -53,7 +53,7 @@ const socketRouter = function (io, db) {
 
                         socket.join(randomString);
                         socket.emit('joined', { room: randomString, player: 'player1', gameId: gameHistoryId.id });
-                    // }
+                    }
                 }
 
 
@@ -118,15 +118,6 @@ const socketRouter = function (io, db) {
 
                 })
                     .then(() => {
-                        // {
-                        //     result: 'hit/miss'
-                        //     ship: 'shipname/null'
-                        //     playernum: 'player1/2'
-                        //     target: 'A1'
-                        // }
-
-                        //switch turns
-                        // .then
 
                         socketService.swapTurn(db, gameId)
                             .then(() => {
@@ -190,20 +181,7 @@ const socketRouter = function (io, db) {
 
 
         socket.on('ships_ready', room => {
-            // if(tempArray.length === 0){
-            //     tempArray.push(player)
-            //     io.in(room).emit('player_ready', (player + ' is ready!'))
-            // } else {
-            //     if(tempArray.indexOf(player) === (-1)){
-            //         tempArray.push(player)
-            //         io.in(room).emit('player_ready', (player + ' is ready!'))
-            //     }
-            //     if(tempArray.length === 2){
-            //         io.in(room).emit('player_ready', (`Both Player's Ships Have Been Set!`))
-            //     }
-            // }
-            // console.log(player + ' :player' + room + ' :room')
-            // io.in(room).emit('player_ready', (player + ' is ready!'))
+          
             socket.broadcast.to(room).emit('opponent_ready', {});
         })
 
