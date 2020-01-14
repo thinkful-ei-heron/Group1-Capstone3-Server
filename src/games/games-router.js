@@ -4,7 +4,7 @@ const GamesService = require('./GamesService');
 
 
 gamesRouter
-  //in future change this to just /games endpoint and get the user id from the req object.
+  //this endpoint retrives all of the logged in user's active games
   .route('/')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
@@ -15,6 +15,20 @@ gamesRouter
     });
   });
 
+  //this endpoint retreives the logged in user's game stats
+gamesRouter
+  .route('/stats')
+  .get((req,res,next) => {
+    const knexInstance = req.app.get('db');
+    const userId = req.app.get('user').id;
+    GamesService.getUserStats(knexInstance, userId)
+    .then(stats => {
+      res.status(200).json(stats);
+    });
+  });
+
+  //this endpoint retrieves the game data for a specific game based on the 
+  //gameId sent in the params
 gamesRouter
   .route('/activegame/:gameId/:playerNum')
   .get((req, res, next) => {
