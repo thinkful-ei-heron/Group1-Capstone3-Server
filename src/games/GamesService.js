@@ -28,6 +28,20 @@ const GamesService = {
       });
   },
 
+  //return the user's stats and the username to use on the
+  //dashboard page
+  getUserStats(db, userid){
+    return db
+      .from('stats')
+      .select('stats.*', 'users.username')
+      .where({userid})
+      .join('users', 'users.id', 'stats.userid')
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
 
   getPlayerIds(db, game_id){
     return db
