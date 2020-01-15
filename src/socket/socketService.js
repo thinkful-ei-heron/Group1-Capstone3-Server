@@ -149,6 +149,14 @@ const socketService = {
             .orWhere({player2: playerId})
             .andWhere({game_status: 'active'});
             
+    },
+
+
+    findGame(db, room) {
+        return db('game_history')
+            .select('*')
+            .where({room_id : room})
+            .first();
     }
 };
 

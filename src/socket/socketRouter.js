@@ -8,50 +8,56 @@ const GamesService = require('../games/GamesService');
 const socketRouter = function (io, db) {
 
     io.on('connection', function (socket) {
-        //console.log('connected', socket.id);
+        // console.log('connected', socket.id);
 
-        //creates/connects sockets to rooms
+        //Connects sockets to rooms
         socket.on('join_room', async (room) => {
             let playerId = socket.userInfo.id;
 
+            //If a random room is requested
             if (room === 'random') {
                 let room = await socketService.findRoom(db);
 
                 //check to see if there are any rooms in the queue
                 if (room.size) {
 
+                    //Checks to see if first in queue is you
                     let playingYourself = await socketService.checkPlayingYourself(db, room.first, playerId);
 
+
                     if (playingYourself.player1 === playerId) {
-                       
                         socket.emit('error-message', { error: 'You can only have one game in the queue at a given time. Please wait for someone else to match against you.' });
 
                     } else {
+                        //Dequeues from queue
                         let roomName = await socketService.dequeue(db, room);
 
+                        //changes player 2 for the game that was at the front of the queue
                         await socketService.updatePlayer2(db, playerId, roomName.id);
-
+                        
+                        //Join and notify the socket
                         socket.join(roomName.room_id);
                         socket.emit('joined', { room: roomName.room_id, player: 'player2', gameId: roomName.id })
                     }
                 }
                 else {
-
+                    //Returns all active games that the player is a part of
                     let activeGames = await socketService.checkNumOfGamesActive(db, playerId)
 
                     
-                    if (activeGames.length > 10) {
-                        
+                    if (activeGames.length >= 10) {
                         socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
-
                     } else {
-
+                        
+                        //Creates a random string for the room_id
                         let randomString = `${Math.floor(Math.random() * 1000)}`;
                         let gameHistoryId = await socketService.makeRoom(db, playerId, randomString);
 
+                        //Enqueues the game and initializes a new row for the game_data
                         await socketService.enqueue(db, gameHistoryId.id);
                         await socketService.setNewGameData(db, gameHistoryId.id);
 
+                        //Join and notify the socket
                         socket.join(randomString);
                         socket.emit('joined', { room: randomString, player: 'player1', gameId: gameHistoryId.id });
                     }
@@ -59,12 +65,26 @@ const socketRouter = function (io, db) {
 
 
             } else {
-                //game_history id in dashboard list of active games
-                //find game_history with room id
-                //make sure person is allowed in the room
-               
-                socket.join(room);
-                socket.emit('reconnected', {});
+                //Tries to find the game the socket is requesting
+                let foundGame = await socketService.findGame(db, room);
+                
+                //If no such game exists
+                if(!foundGame) {
+                    socket.emit('error-message', {error: 'This room does not exist'})
+                } 
+                //If player is not a part of that game
+                else if(foundGame.player1 !== playerId && foundGame.player2 !== playerId) {
+                    socket.emit('error-message', {error: 'You are not allowed in this room'})
+                } 
+                //If the game has been finished
+                else if (foundGame.game_status !== 'active') {
+                    socket.emit('error-message', {error: 'This game has already been finished'})
+                } 
+                //Join and notify the socket
+                else {
+                    socket.join(room);
+                    socket.emit('reconnected', {room: room});
+                }
             }
         });
 
@@ -89,8 +109,8 @@ const socketRouter = function (io, db) {
                 } 
             })
 
-            let result;
-            let winner=null;
+            let result = null;
+            let winner = null;
             //the overarching if/else is based on if the firing user is player 1 or player 2
             //after determining if the user is player 1 or 2, we access the opponents ships.
             //then we check to see if we hit one of the opponent's ships.
@@ -108,7 +128,9 @@ const socketRouter = function (io, db) {
                         //if the target was a hit we will add it to the database in player 1 hits
                         return ShipsService.accessPlayer1Hits(db, gameId).then(res => {
                             let newValue = [target];
+
                             if (res.player1_hits !== null && res.player1_hits !== '') {
+                                
                                 let currentHits = JSON.parse(res.player1_hits);
                                 newValue = [...currentHits, target];
                                 //if the length of newValue is the length of all the ships combined then
@@ -216,35 +238,10 @@ const socketRouter = function (io, db) {
         })
 
 
-
-
-
-
         socket.on('ships_ready', room => {
           
             socket.broadcast.to(room).emit('opponent_ready', {});
         })
-
-        socket.on('seek_status_update', (data) => {
-            console.log(data + ' is my room')
-            if (!firstMove) {
-                firstMove = true;
-                let randomNum = 0
-                randomNum = (Math.floor((Math.random() * 2) + 1))
-                if (bothPlayersJoined) {
-                    console.log(randomNum + 'is a random Number')
-                    io.in(data).emit('update', randomNum)
-                    //socket.emit
-                }
-            } else {
-                let number = randomNum
-                console.log(number + ' is next')
-                number === 1 ? randomNum = 2 : randomNum = 1
-                io.in(data).emit('update', randomNum)
-            }
-        })
-
-
 
 
         socket.on('send-message', data => {
@@ -253,20 +250,11 @@ const socketRouter = function (io, db) {
         })
 
 
-
-
-
-
-
-
-
-
-
-        socket.on('disconnect', () => {
-            console.log('Someone has left a room')
-            bothPlayersJoined = false
-            io.sockets.emit('left', 'The other Player has left')
-        })
+        // socket.on('disconnect', () => {
+        //     // console.log('Someone has left a room')
+            
+        //     io.sockets.emit('left', 'The other Player has left')
+        // })
     });
 };
 
