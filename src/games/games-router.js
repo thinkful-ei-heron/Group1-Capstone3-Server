@@ -40,6 +40,17 @@ gamesRouter
     });
   });
 
+  gamesRouter
+  .route('/results/:gameId')
+  .get((req, res, next) => {
+    const knexInstance = req.app.get('db');
+    const  { gameId }  = req.params;
+    console.log( gameId + 'Current Game Id')
+    GamesService.retrieveResults(knexInstance,  gameId).then(data => {
+      res.status(200).json(data)
+  })
+})
+
 
 
 module.exports = gamesRouter;

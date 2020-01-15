@@ -26,6 +26,17 @@ const GamesService = {
       .then(rows => {
         return rows;
       });
+  },
+
+  retrieveResults(db, gameId) {
+    return db
+    .select('game_data.*')
+    .from('game_data')
+    .where({game_id: gameId})
+    .returning('*')
+    .then(rows => {
+      return rows;
+    });
   }
 
 };
