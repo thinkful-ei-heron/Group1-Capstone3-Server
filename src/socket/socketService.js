@@ -127,6 +127,28 @@ const socketService = {
                         turn: newTurn
                     });
             });
+    },
+
+
+
+
+
+    checkPlayingYourself(db, first) {
+        return db('game_history')
+            .where({id: first})
+            .select('player1')
+            .first();
+    },
+
+
+
+    checkNumOfGamesActive(db, playerId) {
+        return db('game_history')
+            .select('id')
+            .where({player1: playerId})
+            .orWhere({player2: playerId})
+            .andWhere({game_status: 'active'});
+            
     }
 };
 

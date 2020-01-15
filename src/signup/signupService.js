@@ -13,6 +13,17 @@ const signupService = {
                 return rows[0];
             });
     },
+//create new stats tracking for the new user
+    createNewStatsRow(db, userid){
+        return db
+        .into('stats')
+        .insert({userid})
+        .returning('*')
+        .then(rows => {
+            return rows[0];
+        });
+    },
+    
     //Checks to see if username has been used
     checkUsername(db, username) {
         return db.from('users')

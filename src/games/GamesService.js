@@ -37,7 +37,77 @@ const GamesService = {
     .then(rows => {
       return rows;
     });
-  }
+  },
+
+  //return the user's stats and the username to use on the
+  //dashboard page
+  getUserStats(db, userid){
+    return db
+      .from('stats')
+      .select('stats.*', 'users.username')
+      .where({userid})
+      .join('users', 'users.id', 'stats.userid')
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+
+  getPlayerIds(db, game_id){
+    return db
+    .from('game_history')
+    .select('game_history.player1', 'game_history.player2')
+    .where({id: game_id})
+    .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+  updateGameData(db, game_id, winner){
+    return db
+    .from('game_data')
+    .where({game_id})
+    .update({winner})
+    .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+  endGame(db, game_id){
+    return db
+      .from('game_history')
+      .where({id: game_id})
+      .update({game_status: 'complete'})
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+  updateWinnerStats(db, winner_id){
+    return db
+    .from('stats')
+    .where({userid: winner_id})
+    .increment('wins', 1)
+    .returning('*')
+    .then(rows => {
+      return rows[0];
+    });
+  },
+
+  updateLoserStats(db, loser_id){
+    return db
+    .from('stats')
+    .where({userid: loser_id})
+    .increment('losses', 1)
+    .returning('*')
+    .then(rows => {
+      return rows[0];
+    });
+  },
 
 };
 
