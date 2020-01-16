@@ -1,34 +1,54 @@
 const express = require('express');
-const shipsRouter = express.Router();
-const jsonBodyParser = express.json();
+const xss = require('xss');
 const ShipsService = require('./ShipsService');
+const gamesService = require('../games/GamesService');
+
+
+const shipsRouter = express.Router();
 
 //this route is used to set the ships on each players board
 shipsRouter
   .route('/')
-  .post(jsonBodyParser, (req,res,next) => {
-    const knexInstance = req.app.get('db');
+  .post(async (req, res, next) => {
+    const db = req.app.get('db');
     const { shipData, playerNum, gameId } = req.body;
+    const user = req.app.get('user');
 
-    if(!playerNum || !gameId){
-      return res.status(400).json({error: 'Must provide player number and game id to save ship data'});
+    if (!playerNum || !gameId || !shipData) {
+      return res.status(400).json({ error: 'Must provide player number, game id and ship data to save ship data' });
     }
 
-    if(shipData.length < 5){
-      return res.status(400).json({error: 'Must provide complete data for all 5 ships'});
-    }
-    
-    shipData.map(ship => {
-      if(ship.spaces.length === 0){
-        return res.status(400).json({error: 'Must provide complete data for all 5 ships'});
-      }
-    });
+    //Sanitizing input
+    let jsonShips = JSON.stringify(shipData)
+    let xssShipData = xss(jsonShips);
+    let xssPlayerNum = xss(playerNum);
+    let xssGameId = xss(gameId);
 
-    ShipsService.setPlayerShips(knexInstance, gameId, playerNum, JSON.stringify(shipData))
-      .then(result => {
-        return res.status(201).json(result);
-      }).catch(next);
+    let gameHistory = await gamesService.getGameHistory(db, xssGameId);
+
+    if (!gameHistory) {
+      return res.status(400).json({ error: 'Game not found' });
+    }
+    if (gameHistory[xssPlayerNum] !== user.id) {
+      return res.status(400).json({ error: 'Validation failed for this game room' });
+    }
+
+
+    let gameData = await gamesService.getGameData(db, gameHistory.id);
+    if (!gameData) {
+      return res.status(400).json({ error: 'Game data not found' });
+    }
+
+    let shipDataError = ShipsService.validateShipData(xssShipData, xssPlayerNum, gameData);
+    if (shipDataError) {
+      return res.status(400).json({ error: shipDataError });
+    }
+
+
+    let result = await ShipsService.setPlayerShips(db, xssGameId, xssPlayerNum, xssShipData)
+    return res.status(201).json(result);
+
   });
 
 
-  module.exports = shipsRouter;
+module.exports = shipsRouter;

@@ -1,15 +1,48 @@
 const ShipsService = {
-//accesses the player's ships in the game_data table and updates the location
-  setPlayerShips(db, game_id, playerString, shipData){
+  //accesses the player's ships in the game_data table and updates the location
+  validateShipData(shipData, playerNum, gameData) {
+    let parsedData = JSON.parse(shipData);
+
+    if(!Array.isArray(parsedData)) {
+      return 'Malformed ship data';
+    }
+
+    if (gameData[`${playerNum}_ships`]) {
+      return 'Cannot replace your ships';
+    }
+
+    if (parsedData.length !== 5) {
+      return 'Must provide data for all 5 ships';
+    }
+
+    let badData = false;
+    try {
+      parsedData.forEach(ship => {
+        if (ship.spaces.length <= 0 || ship.spaces.length > 5) {
+          badData = true;
+        }
+      });
+    } 
+    catch(e) {
+      badData = true;
+    }
+    
+    if(badData) return 'Must provide complete data for all 5 ships';
+  },
+
+
+
+
+  setPlayerShips(db, game_id, playerString, shipData) {
     let shipString = `${playerString}_ships`;
     return db
-    .from('game_data')
-    .where({ game_id })
-    .update(`${shipString}`, shipData)
-    .returning('*')
-    .then(rows => {
-      return rows[0];
-    });
+      .from('game_data')
+      .where({ game_id })
+      .update(`${shipString}`, shipData)
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
   },
 
   //function that checks the opponent ships to see if the target is included
@@ -23,14 +56,14 @@ const ShipsService = {
     let result = 'miss';
     let ship = null;
     let sunk = null;
-    
+
     for (let i = 0; i < opponentShips.length; i++) {
       if (opponentShips[i].spaces.includes(target)) {
         result = 'hit';
         ship = opponentShips[i].name;
         playerHits = playerHits ? [...playerHits, target] : [target];
-        if(opponentShips[i].spaces.every(value => playerHits.includes(value))){
-          sunk= true;
+        if (opponentShips[i].spaces.every(value => playerHits.includes(value))) {
+          sunk = true;
         }
         break;
       }
@@ -42,16 +75,16 @@ const ShipsService = {
   checkForRepeatMove(target, gameData, playerString) {
     let repeat = false;
 
-    if(gameData[`${playerString}_hits`]) {
+    if (gameData[`${playerString}_hits`]) {
       let myHits = JSON.parse(gameData[`${playerString}_hits`]);
-      if(myHits.includes(target)) repeat = true;
+      if (myHits.includes(target)) repeat = true;
     }
 
-    if(gameData[`${playerString}_misses`]) {
+    if (gameData[`${playerString}_misses`]) {
       let myMisses = JSON.parse(gameData[`${playerString}_misses`]);
-      if(myMisses.includes(target)) repeat = true;
+      if (myMisses.includes(target)) repeat = true;
     }
-    
+
 
     return repeat;
 
@@ -71,7 +104,7 @@ const ShipsService = {
       });
   },
 
-//add target to player's misses in game_data
+  //add target to player's misses in game_data
   addToMisses(db, gameId, newMisses, playerMissString) {
     return db
       .from('game_data')

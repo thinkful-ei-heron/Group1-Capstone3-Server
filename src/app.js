@@ -11,13 +11,14 @@ const gamesRouter = require('./games/games-router');
 const checkAuth = require('./auth/checkAuth');
 
 const app = express();
+const jsonParser = express.json();
 
 const morganOption = (NODE_ENV === 'production')
     ? 'tiny'
     : 'dev';
 
 app.use(morgan(morganOption));
-app.use(express.json());
+app.use(jsonParser);
 app.use(helmet());
 app.use(cors());
 
