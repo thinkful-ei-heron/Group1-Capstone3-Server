@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "test": "mocha --require test/configTest.js",
+    "test": "mocha --require test/configTest.js --exit",
     "testing": "mocha -w --require test/configTest.js",
     "start": "node ./src/server",
     "dev": "nodemon ./src/server",
@@ -36,6 +36,7 @@
     "mocha": "^6.2.2",
     "nodemon": "^1.19.4",
     "postgrator-cli": "^3.2.0",
+    "socket.io-client": "^2.3.0",
     "supertest": "^4.0.2"
   }
 }
