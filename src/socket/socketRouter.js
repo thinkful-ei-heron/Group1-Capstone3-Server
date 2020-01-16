@@ -93,12 +93,29 @@ const socketRouter = function (io, db) {
         socket.on('fire', async (data) => {
             const { target, gameId, roomId} = data;
             let playerId = socket.userInfo.id;
+
+            //Default the target is correct
+            let targetIncorrectBool = false;
+            //All possible first characters of target
+            let possibleFirst = ['A','B','C','D','E','F','G','H','I','J'];
+            //Target's length can only be 2 or 3 
+            if(!target ||!target.length|| target.length > 3 || target.length === 1) targetIncorrectBool = true;
+            else if(!possibleFirst.includes(target.charAt(0))) targetIncorrectBool = true;
+            //If second character isn't a number
+            else if(!parseInt(target.charAt(1))) targetIncorrectBool = true;
+            //If third character exists but is not 0
+            else if(target.length === 3 && parseInt(target.charAt(3)) !== 0) targetIncorrectBool = true;
             
             //Gets entire game_history table in accordance with the sockets requested gameId
             let gameHistory = await GamesService.getGameHistory(db, gameId);
 
+
+            //If the selected target doesn't meet the above criteria
+            if(targetIncorrectBool) {
+                socket.emit('error-message', {error: 'The target youve selected is out of bounds'});
+            }
             //If no game found
-            if(!gameHistory) {
+            else if(!gameHistory) {
                 socket.emit('error-message', {error: 'The game you are trying to modify does not exist'});
             } 
             //If game has been finished
@@ -123,11 +140,18 @@ const socketRouter = function (io, db) {
                 
                 //Gets entire game_data table in accordance with the sockets requested gameId
                 let gameData = await GamesService.getGameData(db, gameId);
+                let repeatMoveBool = await ShipsService.checkForRepeatMove(target, gameData, playerString);
 
                 //check to see if opponent ships are set in game_data
                 if(!gameData[`${opponentString}_ships`]) {
                     socket.emit('error-message', {error: 'Must wait until opponent sets their ships'});
                 } 
+                else if(repeatMoveBool) {
+                    socket.emit('error-message', {error: 'Target has already been selected'});
+                }
+                else if(gameHistory.turn !== playerString) {
+                    socket.emit('error-message', {error: 'You cannot fire when it is not your turn'});
+                }
                 else {
                     //Returns an object with result and ship keys 
                     result = await ShipsService.checkForHit(target, gameData, opponentString);

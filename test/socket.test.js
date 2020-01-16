@@ -9,6 +9,9 @@ describe('Socket Routes', () => {
     let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail2@gmail.com' };
     let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail3@gmail.com' };
 
+    let testShips = `[{"name":"aircraftCarrier","length":5,"spaces":["A1","A2","A3","A4","A5"]},{"name":"battleship","length":4,"spaces":["A6","A7","A8","A9"]},{"name":"cruiser","length":3,"spaces":["A10","B10","C10"]},{"name":"submarine","length":3,"spaces":["D10","E10","F10"]},{"name":"defender","length":2,"spaces":["I10","H10"]}]`;
+    let testShips2 = `[{"name":"aircraftCarrier","length":5,"spaces":["A1","B1","C1","D1","E1"]},{"name":"battleship","length":4,"spaces":["F1","G1","H1","I1"]},{"name":"cruiser","length":3,"spaces":["J1","J2","J3"]},{"name":"submarine","length":3,"spaces":["J4","J5","J6"]},{"name":"defender","length":2,"spaces":["J7","J8"]}]`;
+
     let URL = 'http://localhost:8000';
     server = require('../src/server');
     let authOptions = {
@@ -315,7 +318,7 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('reconnected', () => {
-                    
+
                     client.on('opponent_ready', () => {
                         client.disconnect(true);
                         done();
@@ -327,7 +330,7 @@ describe('Socket Routes', () => {
 
             client2.on('connect', () => {
                 client2.on('reconnected', () => {
-                    
+
                     client2.emit('ships_ready', '1')
                     client2.disconnect(true);
                 });
@@ -342,7 +345,7 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('reconnected', () => {
-                    
+
                     client.on('chat-message', (data) => {
                         expect(data).to.be.an('Object');
                         expect(data.username).to.equal('admin2');
@@ -359,8 +362,8 @@ describe('Socket Routes', () => {
 
             client2.on('connect', () => {
                 client2.on('reconnected', () => {
-                    
-                    client2.emit('send-message', {room: '1', message: 'This test is working'})
+
+                    client2.emit('send-message', { room: '1', message: 'This test is working' })
                     client2.disconnect(true);
                 });
 
@@ -371,46 +374,22 @@ describe('Socket Routes', () => {
 
 
 
-        // it('send-message broadcasts to opponent', (done) => {
-        //     const client = io.connect(URL, authOptions);
-        //     const client2 = io.connect(URL, authOptions2);
 
-        //     client.on('connect', () => {
-        //         client.on('reconnected', () => {
-                    
-        //             client.on('chat-message', (data) => {
-        //                 expect(data).to.be.an('Object');
-        //                 expect(data.username).to.equal('admin2');
-        //                 expect(data.message).to.equal('This test is working');
-
-
-        //                 client.disconnect(true);
-        //                 done();
-        //             });
-        //         });
-
-        //         client.emit('join_room', '1');
-        //     });
-
-        //     client2.on('connect', () => {
-        //         client2.on('reconnected', () => {
-                    
-        //             client2.emit('send-message', {room: '1', message: 'This test is working'})
-        //             client2.disconnect(true);
-        //         });
-
-        //         client2.emit('join_room', '1');
-        //     });
-        // });
     });
 
-    
+
 
     describe('Socket fire', () => {
 
         let games = [
-            { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2', game_status: 'complete'},
-            { player1: 3, player2: 2, room_id: '3'}, { player1: 1, player2: 2, room_id: '4' }
+            { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2', game_status: 'complete' },
+            { player1: 3, player2: 2, room_id: '3' }, { player1: 1, player2: 2, room_id: '4' }, { player1: 1, player2: 2, room_id: '5', turn: 'player2' },
+            { player1: 1, player2: 2, room_id: '6', turn: 'player2' }
+        ];
+
+        let gameData = [
+            { game_id: 1, player1_ships: testShips, player2_ships: testShips2, player1_misses: '["D8","I4"]' }, { game_id: 4, player1_ships: testShips },
+            { game_id: 5, player1_ships: testShips, player2_ships: testShips2 }, { game_id: 6, player1_ships: testShips, player2_ships: testShips2, player2_hits: '["A2","A3","A5","A4","A6","A7","A8","A9","A10","B10","C10","D10","E10","F10","H10","I10"]' }
         ];
 
         beforeEach(async () => {
@@ -420,8 +399,12 @@ describe('Socket Routes', () => {
                     db.into('game_history')
                         .insert(games)
                         .then(() => {
-                            return db.into('room_queue')
-                                .insert({ size: 0 })
+                            db.into('game_data')
+                                .insert(gameData)
+                                .then(() => {
+                                    return db.into('room_queue')
+                                        .insert({ size: 0 })
+                                });
                         });
                 });
         });
@@ -431,13 +414,13 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('error-message', data => {
-                    expect(data).to.eql({error: 'The game you are trying to modify does not exist'});
+                    expect(data).to.eql({ error: 'The game you are trying to modify does not exist' });
 
                     client.disconnect(true);
                     done();
                 });
 
-                client.emit('fire', {target: 'A3', gameId: 9999, roomId: 1});
+                client.emit('fire', { target: 'A3', gameId: 9999, roomId: 1 });
             });
         });
 
@@ -446,13 +429,13 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('error-message', data => {
-                    expect(data).to.eql({error: 'The game you are trying to modify has been completed'});
+                    expect(data).to.eql({ error: 'The game you are trying to modify has been completed' });
 
                     client.disconnect(true);
                     done();
                 });
 
-                client.emit('fire', {target: 'A3', gameId: 2, roomId: 2});
+                client.emit('fire', { target: 'A3', gameId: 2, roomId: '2' });
             });
         });
 
@@ -461,13 +444,13 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('error-message', data => {
-                    expect(data).to.eql({error: 'You are not allowed to make changes to this game'});
+                    expect(data).to.eql({ error: 'You are not allowed to make changes to this game' });
 
                     client.disconnect(true);
                     done();
                 });
 
-                client.emit('fire', {target: 'A3', gameId: 3, roomId: 3});
+                client.emit('fire', { target: 'A3', gameId: 3, roomId: '3' });
             });
         });
 
@@ -476,15 +459,237 @@ describe('Socket Routes', () => {
 
             client.on('connect', () => {
                 client.on('error-message', data => {
-                    expect(data).to.eql({error: 'Incorrect room-id or game-id'});
+                    expect(data).to.eql({ error: 'Incorrect room-id or game-id' });
 
                     client.disconnect(true);
                     done();
                 });
 
-                client.emit('fire', {target: 'A3', gameId: 1, roomId: 9999});
+                client.emit('fire', { target: 'A3', gameId: 1, roomId: '9999' });
             });
         });
+
+
+        it('errors if you try to fire on a game while opponent does not have their ships set', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'Must wait until opponent sets their ships' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'A3', gameId: 4, roomId: '4' });
+            });
+        });
+
+        it('errors if you try to fire on a game while not your turn', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'You cannot fire when it is not your turn' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'A1', gameId: 5, roomId: '5' });
+            });
+        });
+
+        //----------------------------------------------------------------------------------------
+        //Target tests
+
+        it('errors if you try to fire on a target out of bounds length', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'The target youve selected is out of bounds' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'A', gameId: 4, roomId: '4' });
+            });
+        });
+
+        it('errors if you try to fire on a target out of bounds first character not in possible firsts', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'The target youve selected is out of bounds' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'Z3', gameId: 4, roomId: '4' });
+            });
+        });
+
+        it('errors if you try to fire on a target out of bounds second character is not a number', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'The target youve selected is out of bounds' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'Ab', gameId: 4, roomId: '4' });
+            });
+        });
+
+        it('errors if you try to fire on a target out of bounds third character not 0', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'The target youve selected is out of bounds' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'A76', gameId: 4, roomId: '4' });
+            });
+        });
+
+        it('errors if you try to fire on a target youve already fired upon', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({ error: 'Target has already been selected' });
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', { target: 'D8', gameId: 1, roomId: '1' });
+            });
+        });
+
+
+        //---------------------------------------------------------------------------------------------
+
+        it('fire emits successful shots (FULL INTEGRATION)', (done) => {
+            const client = io.connect(URL, authOptions);
+            const client2 = io.connect(URL, authOptions2);
+
+            client.on('connect', () => {
+                client.on('reconnected', () => {
+
+                    client.on('response', (data) => {
+                        expect(data).to.be.an('Object');
+                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target');
+                        expect(data.result).to.equal('hit');
+                        expect(data.ship).to.equal('aircraftCarrier');
+                        expect(data.playerNum).to.equal('player2');
+
+                        db('game_data')
+                            .select('player2_hits')
+                            .where({ game_id: 5 })
+                            .first()
+                            .then(data => {
+                                expect(data.player2_hits).to.equal('["A1"]')
+
+                                db('game_history')
+                                    .select('turn')
+                                    .where({ id: 5 })
+                                    .first()
+                                    .then(turn => {
+                                        expect(turn.turn).to.equal('player1');
+                                        client.disconnect(true);
+                                        done();
+                                    });
+                            });
+                    });
+                });
+
+                client.emit('join_room', '5');
+            });
+
+            client2.on('connect', () => {
+                client2.on('reconnected', () => {
+                    client2.on('response', (data) => {
+                        expect(data).to.be.an('Object');
+                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target');
+                        expect(data.result).to.equal('hit');
+                        expect(data.ship).to.equal('aircraftCarrier');
+                        expect(data.playerNum).to.equal('player2');
+
+                        client2.disconnect(true);
+                    });
+
+                    client2.emit('fire', { target: 'A1', gameId: 5, roomId: '5' })
+                });
+
+                client2.emit('join_room', '5');
+            });
+        });
+
+
+        it('fire emits when a player has won the game (FULL INTEGRATION)', (done) => {
+            const client = io.connect(URL, authOptions);
+            const client2 = io.connect(URL, authOptions2);
+
+            client.on('connect', () => {
+                client.on('reconnected', () => {
+
+                    client.on('win', (data) => {
+                        expect(data).to.be.an('Object');
+                        expect(data).to.have.all.keys('winner');
+                        expect(data.winner).to.equal('player2');
+
+                        db('game_data')
+                            .select('winner')
+                            .where({ game_id: 6 })
+                            .first()
+                            .then(data => {
+                                expect(data.winner).to.equal('player2')
+
+                                db('game_history')
+                                    .select('game_status')
+                                    .where({ id: 6 })
+                                    .first()
+                                    .then(data2 => {
+                                        expect(data2.game_status).to.equal('complete');
+                                        client.disconnect(true);
+                                        done();
+                                    });
+                            });
+                    });
+                });
+
+                client.emit('join_room', '6');
+            });
+
+            client2.on('connect', () => {
+                client2.on('reconnected', () => {
+                    client2.on('win', (data) => {
+                        expect(data).to.be.an('Object');
+                        expect(data).to.have.all.keys('winner');
+                        expect(data.winner).to.equal('player2');
+
+                        client2.disconnect(true);
+                    });
+
+                    client2.emit('fire', { target: 'A1', gameId: 6, roomId: '6' })
+                });
+
+                client2.emit('join_room', '6');
+            });
+        });
+
     });
 
     // describe('', () => {
