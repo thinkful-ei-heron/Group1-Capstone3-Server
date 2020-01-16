@@ -173,7 +173,7 @@ const socketRouter = function (io, db) {
                     await socketService.swapTurn(db, gameId)
                                     
                     //Tell sockets in the room what the result of the shot was
-                    io.to(roomId).emit('response', { ...result, playerString, target });
+                    io.to(roomId).emit('response', { ...result, playerNum: playerString, target });
                     
                     //if the win message exists, then transmit it
                     if (winner) {
