@@ -129,8 +129,9 @@ const socketRouter = function (io, db) {
                     socket.emit('error-message', {error: 'Must wait until opponent sets their ships'});
                 } 
                 else {
-                    //Returns an object with result and ship keys 
-                    result = await ShipsService.checkForHit(target, gameData, opponentString);
+                    //Returns an object with result and ship keys and a boolean for sunk representing if the
+                    //ship has been sunk.
+                    result = await ShipsService.checkForHit(target, gameData, opponentString, playerString);
 
                     if (result.result === 'hit') {
                         //Used to help determine which player's hits to update

@@ -3,29 +3,31 @@ const shipsRouter = express.Router();
 const jsonBodyParser = express.json();
 const ShipsService = require('./ShipsService');
 
-//this route is used to set the ships on each players board or to fire at the opponent's board.
+//this route is used to set the ships on each players board
 shipsRouter
   .route('/')
-  //implement require auth for all in this route?
-
-  //the following post route is for setting the user's ships. The front end needs to send the shipData, playerNum
-  //(ie: player1 or player2) and the gameId.
   .post(jsonBodyParser, (req,res,next) => {
     const knexInstance = req.app.get('db');
     const { shipData, playerNum, gameId } = req.body;
-    if(shipData.length < 5){
-      return res.status(400).json({error: 'must provide data for all 5 ships'});
-    }
+
     if(!playerNum || !gameId){
-      return res.status(400).json({error:'must provide player number and game id'});
+      return res.status(400).json({error: 'Must provide player number and game id to save ship data'});
     }
-    //need to store shipData in the database for the user and gameId associated with it.
-    if(playerNum === 'player1'){
-      ShipsService.setPlayer1Ships(knexInstance, gameId, JSON.stringify(shipData));
-    } else {
-      ShipsService.setPlayer2Ships(knexInstance, gameId, JSON.stringify(shipData));
+
+    if(shipData.length < 5){
+      return res.status(400).json({error: 'Must provide complete data for all 5 ships'});
     }
-    res.status(201).json(shipData);
+    
+    shipData.map(ship => {
+      if(ship.spaces.length === 0){
+        return res.status(400).json({error: 'Must provide complete data for all 5 ships'});
+      }
+    });
+
+    ShipsService.setPlayerShips(knexInstance, gameId, playerNum, JSON.stringify(shipData))
+      .then(result => {
+        return res.status(201).json(result);
+      }).catch(next);
   });
 
 
