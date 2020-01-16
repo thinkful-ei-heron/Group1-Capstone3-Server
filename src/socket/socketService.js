@@ -131,8 +131,6 @@ const socketService = {
 
 
 
-
-
     checkPlayingYourself(db, first) {
         return db('game_history')
             .where({id: first})
@@ -150,6 +148,7 @@ const socketService = {
             .andWhere({game_status: 'active'});
             
     },
+    
 
 
     findGame(db, room) {

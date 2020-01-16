@@ -94,7 +94,6 @@ describe('Socket Routes', () => {
         });
     });
 
-
     describe('Socket join_room', () => {
 
         context('Nothing in queue', () => {
@@ -290,31 +289,6 @@ describe('Socket Routes', () => {
                 });
             });
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     });
 
     describe('Socket in active game', () => {
@@ -395,6 +369,8 @@ describe('Socket Routes', () => {
         });
 
 
+
+
         // it('send-message broadcasts to opponent', (done) => {
         //     const client = io.connect(URL, authOptions);
         //     const client2 = io.connect(URL, authOptions2);
@@ -428,9 +404,88 @@ describe('Socket Routes', () => {
         // });
     });
 
-    // describe('Socket send-message', () => {
+    
 
-    // });
+    describe('Socket fire', () => {
+
+        let games = [
+            { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2', game_status: 'complete'},
+            { player1: 3, player2: 2, room_id: '3'}, { player1: 1, player2: 2, room_id: '4' }
+        ];
+
+        beforeEach(async () => {
+            await db.into('users')
+                .insert([testUser, testUser2, testUser3])
+                .then(() => {
+                    db.into('game_history')
+                        .insert(games)
+                        .then(() => {
+                            return db.into('room_queue')
+                                .insert({ size: 0 })
+                        });
+                });
+        });
+
+        it('errors if you try to fire on a game not found', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({error: 'The game you are trying to modify does not exist'});
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', {target: 'A3', gameId: 9999, roomId: 1});
+            });
+        });
+
+        it('errors if you try to fire on a game that is finished', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({error: 'The game you are trying to modify has been completed'});
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', {target: 'A3', gameId: 2, roomId: 2});
+            });
+        });
+
+        it('errors if you try to fire on a game you are not a part of', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({error: 'You are not allowed to make changes to this game'});
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', {target: 'A3', gameId: 3, roomId: 3});
+            });
+        });
+
+        it('errors if you try to fire on a game while providing incorrect roomid', (done) => {
+            const client = io.connect(URL, authOptions);
+
+            client.on('connect', () => {
+                client.on('error-message', data => {
+                    expect(data).to.eql({error: 'Incorrect room-id or game-id'});
+
+                    client.disconnect(true);
+                    done();
+                });
+
+                client.emit('fire', {target: 'A3', gameId: 1, roomId: 9999});
+            });
+        });
+    });
 
     // describe('', () => {
 
