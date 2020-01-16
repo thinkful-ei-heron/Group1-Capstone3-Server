@@ -1,53 +1,45 @@
 const ShipsService = {
-
-  setPlayer1Ships(db, gameId, shipData) {
+//accesses the player's ships in the game_data table and updates the location
+  setPlayerShips(db, game_id, playerString, shipData){
+    let shipString = `${playerString}_ships`;
     return db
-      .from('game_data')
-      .where({ game_id: gameId })
-      .update({ player1_ships: shipData })
-      .returning('*')
-      .then(rows => {
-        return rows;
-      });
+    .from('game_data')
+    .where({ game_id })
+    .update(`${shipString}`, shipData)
+    .returning('*')
+    .then(rows => {
+      return rows[0];
+    });
   },
 
-  setPlayer2Ships(db, gameId, shipData) {
-    return db
-      .from('game_data')
-      .where({ game_id: gameId })
-      .update({ player2_ships: shipData })
-      .returning('*')
-      .then(rows => {
-        return rows;
-      });
-  },
-
-  checkForHit(target, gameData, opponentString) {
+  //function that checks the opponent ships to see if the target is included
+  //in any of the ship location arrays. If a hit is made, it further checks to see
+  // if the ship has been sunk.
+  checkForHit(target, gameData, opponentString, playerString) {
     let shipString = `${opponentString}_ships`;
-
     let opponentShips = JSON.parse(gameData[shipString]);
+    let playerHits = JSON.parse(gameData[`${playerString}_hits`]);
 
     let result = 'miss';
     let ship = null;
-
+    let sunk = null;
+    
     for (let i = 0; i < opponentShips.length; i++) {
       if (opponentShips[i].spaces.includes(target)) {
         result = 'hit';
         ship = opponentShips[i].name;
+        playerHits = playerHits ? [...playerHits, target] : [target];
+        if(opponentShips[i].spaces.every(value => playerHits.includes(value))){
+          sunk= true;
+        }
         break;
       }
     }
-
-    //maybe we can also add a way to check to see if all of a boats' coordinates
-    //have been hit. if so we can return a message that ship has been sunk and 
-    //we can mark it as sunk in the database.
-    return { result, ship };
+    return { result, ship, sunk };
   },
 
-  // HITS SERVICE FUNCTIONS
-
+  // add target to player's hit's in game_data table
   addToHits(db, gameId, newHits, playerHitString) {
-
     return db
       .from('game_data')
       .where({ game_id: gameId })
@@ -58,10 +50,8 @@ const ShipsService = {
       });
   },
 
-  // MISSES SERVICE FUNCTIONS
-
+//add target to player's misses in game_data
   addToMisses(db, gameId, newMisses, playerMissString) {
-
     return db
       .from('game_data')
       .where({ game_id: gameId })
