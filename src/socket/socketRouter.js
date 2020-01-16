@@ -153,8 +153,9 @@ const socketRouter = function (io, db) {
                     socket.emit('error-message', {error: 'You cannot fire when it is not your turn'});
                 }
                 else {
-                    //Returns an object with result and ship keys 
-                    result = await ShipsService.checkForHit(target, gameData, opponentString);
+                    //Returns an object with result and ship keys and a boolean for sunk representing if the
+                    //ship has been sunk.
+                    result = await ShipsService.checkForHit(target, gameData, opponentString, playerString);
 
                     if (result.result === 'hit') {
                         //Used to help determine which player's hits to update
@@ -197,7 +198,9 @@ const socketRouter = function (io, db) {
                     await socketService.swapTurn(db, gameId)
                                     
                     //Tell sockets in the room what the result of the shot was
+
                     io.to(roomId).emit('response', { ...result, playerNum:playerString, target });
+
                     
                     //if the win message exists, then transmit it
                     if (winner) {
