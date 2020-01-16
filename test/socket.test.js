@@ -312,7 +312,8 @@ describe('Socket Routes', () => {
 
 
 
-        it('ships_ready broadcasts to opponent', (done) => {
+        it('ships_ready broadcasts to opponent', function (done) {
+            this.retries(3);
             const client = io.connect(URL, authOptions);
             const client2 = io.connect(URL, authOptions2);
 
@@ -339,7 +340,8 @@ describe('Socket Routes', () => {
             });
         });
 
-        it('send-message broadcasts to opponent', (done) => {
+        it('send-message broadcasts to opponent', function (done) {
+            this.retries(3);
             const client = io.connect(URL, authOptions);
             const client2 = io.connect(URL, authOptions2);
 
@@ -389,7 +391,7 @@ describe('Socket Routes', () => {
 
         let gameData = [
             { game_id: 1, player1_ships: testShips, player2_ships: testShips2, player1_misses: '["D8","I4"]' }, { game_id: 4, player1_ships: testShips },
-            { game_id: 5, player1_ships: testShips, player2_ships: testShips2 }, { game_id: 6, player1_ships: testShips, player2_ships: testShips2, player2_hits: '["A2","A3","A5","A4","A6","A7","A8","A9","A10","B10","C10","D10","E10","F10","H10","I10"]' }
+            { game_id: 5, player1_ships: testShips, player2_ships: testShips2, player2_hits: '["A2","A3","A4","A5"]'}, { game_id: 6, player1_ships: testShips, player2_ships: testShips2, player2_hits: '["A2","A3","A5","A4","A6","A7","A8","A9","A10","B10","C10","D10","E10","F10","H10","I10"]' }
         ];
 
         beforeEach(async () => {
@@ -581,7 +583,7 @@ describe('Socket Routes', () => {
 
         //---------------------------------------------------------------------------------------------
 
-        it('fire emits successful shots (FULL INTEGRATION)', (done) => {
+        it('fire emits successful shots and sinks ship successfully (FULL INTEGRATION)', (done) => {
             const client = io.connect(URL, authOptions);
             const client2 = io.connect(URL, authOptions2);
 
@@ -590,17 +592,18 @@ describe('Socket Routes', () => {
 
                     client.on('response', (data) => {
                         expect(data).to.be.an('Object');
-                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target');
+                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target', 'sunk');
                         expect(data.result).to.equal('hit');
                         expect(data.ship).to.equal('aircraftCarrier');
                         expect(data.playerNum).to.equal('player2');
+                        expect(data.sunk).to.equal(true);
 
                         db('game_data')
                             .select('player2_hits')
                             .where({ game_id: 5 })
                             .first()
                             .then(data => {
-                                expect(data.player2_hits).to.equal('["A1"]')
+                                expect(data.player2_hits).to.equal('["A2","A3","A4","A5","A1"]')
 
                                 db('game_history')
                                     .select('turn')
@@ -622,10 +625,11 @@ describe('Socket Routes', () => {
                 client2.on('reconnected', () => {
                     client2.on('response', (data) => {
                         expect(data).to.be.an('Object');
-                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target');
+                        expect(data).to.have.all.keys('result', 'ship', 'playerNum', 'target', 'sunk');
                         expect(data.result).to.equal('hit');
                         expect(data.ship).to.equal('aircraftCarrier');
                         expect(data.playerNum).to.equal('player2');
+                        expect(data.sunk).to.equal(true);
 
                         client2.disconnect(true);
                     });

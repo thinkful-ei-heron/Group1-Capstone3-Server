@@ -80,7 +80,7 @@ describe('Auth Endpoints', function() {
             return db.into('users').insert({...testUser,password: testPass});
             });
 
-            it(`returns 200 JWT auth token using secret when valid credentials`, () => {
+            it(`returns 200 JWT auth token using secret when valid credentials`, function() {
                 this.retries(10);
                 const expectedToken = jwt.sign(
                     { user_id: testUser.id},
