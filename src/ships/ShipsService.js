@@ -38,6 +38,27 @@ const ShipsService = {
     return { result, ship, sunk };
   },
 
+
+  checkForRepeatMove(target, gameData, playerString) {
+    let repeat = false;
+
+    if(gameData[`${playerString}_hits`]) {
+      let myHits = JSON.parse(gameData[`${playerString}_hits`]);
+      if(myHits.includes(target)) repeat = true;
+    }
+
+    if(gameData[`${playerString}_misses`]) {
+      let myMisses = JSON.parse(gameData[`${playerString}_misses`]);
+      if(myMisses.includes(target)) repeat = true;
+    }
+    
+
+    return repeat;
+
+  },
+
+  // HITS SERVICE FUNCTIONS
+
   // add target to player's hit's in game_data table
   addToHits(db, gameId, newHits, playerHitString) {
     return db
