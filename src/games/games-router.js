@@ -82,7 +82,10 @@ gamesRouter
     GamesService.getGameData(knexInstance, gameId)
     .then((data) => {
 
-      if(data.winner) {
+      if(!data) {
+        return res.status(400).json({error: 'invalid game id'});
+      }
+      else if(data.winner) {
         return res.status(400).json({error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired'});
       } 
       else {
