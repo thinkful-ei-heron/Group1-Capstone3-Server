@@ -40,8 +40,23 @@ gamesRouter
     let opponentString = (playerNum === 'player1') ? 'player2' : 'player1';
     let playerString = playerNum;
 
+    if(isNaN(gameId)){
+      return res.status(400).json({error: 'Must send a valid game id'});
+    }
+
+    if(playerNum !== 'player1' && playerNum !== 'player2'){
+      return res.status(400).json({error: 'Must send a valid playerNum'});
+    }
+
+
     GamesService.retrieveGameData(knexInstance, gameId).then(data => {
       let gameData = data;
+      if(!gameData){
+        return res.status(400).json({error: 'Must send a gameId of an existing game'});
+      }
+      if(gameData.winner){
+        return res.status(400).json({error: 'Cannot resume a completed game'});
+      }
 
       gameData[`${opponentString}_ships`] = gameData[`${opponentString}_ships`] ? true : false;
       gameData[`${playerString}_ships`] = JSON.parse(gameData[`${playerString}_ships`]);
@@ -63,6 +78,13 @@ gamesRouter
     const knexInstance = req.app.get('db');
     const  { gameId }  = req.params;
     GamesService.retrieveResults(knexInstance,  gameId).then(data => {
+      if(!data[0]){
+        return res.status(400).json({error: 'Must send a gameId of an existing game'});
+      } 
+      
+      if(!data[0].winner){
+        return res.status(400).json({error: 'Game is not completed'});
+      }
       res.status(200).json(data);
   })
   .catch(next);
