@@ -6,7 +6,9 @@ CREATE TYPE playerTurn AS ENUM (
 
 CREATE TYPE gameStatus AS ENUM (
     'active',
-    'complete'
+    'complete',
+    'expired',
+    'forfeited'
 );
 
 create table if not exists game_history (
@@ -16,6 +18,6 @@ create table if not exists game_history (
     room_id text not null,
     next integer default null,
     turn playerTurn default 'player1',
-    game_status gameStatus default 'active'
+    game_status gameStatus default 'active' not null
 );
 commit;

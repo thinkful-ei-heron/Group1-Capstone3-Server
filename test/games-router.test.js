@@ -29,14 +29,14 @@ describe('Games Endpoints', () => {
     context('Given incorrect auth', () => {
       it('responds with error given no auth header', () => {
         return supertest(app)
-        .get('/api/games')
-        .expect(401, {error:'Missing bearer token'});
+          .get('/api/games')
+          .expect(401, { error: 'Missing bearer token' });
       });
       it('responds with invalid auth given wrong auth header', () => {
         return supertest(app)
-        .get('/api/games')
-        .set('Authorization', 'Bearer wrong')
-        .expect(401, {error:'Invalid credentials'});
+          .get('/api/games')
+          .set('Authorization', 'Bearer wrong')
+          .expect(401, { error: 'Invalid credentials' });
       });
     });
 
@@ -58,16 +58,19 @@ describe('Games Endpoints', () => {
 
     context('Given a mix of active and complete games in the db', () => {
       beforeEach('insert games', () =>
-        helpers.seedGameHistory(
+        helpers.seedGamesDataTable(
           db,
+          testUsers,
           testGames,
-          testUsers
+          testData
         )
       );
 
-      it('responds with an array of only the active games with username added and the userId', () => {
+
+
+      it('returns correct game data even when active expired game in game_history (FULL INTEGRATION)', () => {
         let expectedGames = helpers.makeGameHistoryArray();
-        expectedGames = expectedGames.slice(0, -1);
+        expectedGames = expectedGames.slice(0, -2);
         for (let i = 0; i < expectedGames.length; i++) {
           if (expectedGames[i].player1 === testUsers[0].id) {
             expectedGames[i].player1_username = testUsers[0].username;
@@ -77,13 +80,27 @@ describe('Games Endpoints', () => {
             expectedGames[i].player2_username = testUsers[0].username;
           }
         }
-
+  
+  
         return supertest(app)
           .get('/api/games')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, {
-            result: expectedGames,
-            userId: testUsers[0].id
+          .expect(200, { result: expectedGames, userId: 1 })
+          .then(() => {
+            db('game_history')
+              .where({ id: 5 })
+              .first()
+              .then(game => {
+                expect(game).to.eql({
+                  id: 5,
+                  player1: 1,
+                  player2: 2,
+                  room_id: "500",
+                  next: null,
+                  turn: 'player2',
+                  game_status: 'expired'
+                })
+              })
           });
       });
     });
@@ -113,12 +130,12 @@ describe('Games Endpoints', () => {
 
     context('Given that the user has no active games', () => {
       let adjustedTestGames = helpers.makeGameHistoryArray();
-      adjustedTestGames.forEach(game=> {
+      adjustedTestGames.forEach(game => {
         game.player1 = testUsers[1].id;
         game.player2 = testUsers[1].id;
       });
 
-      beforeEach('insert games that the test-user is not a player in', () => 
+      beforeEach('insert games that the test-user is not a player in', () =>
         helpers.seedGameHistory(
           db,
           adjustedTestGames,
@@ -136,14 +153,67 @@ describe('Games Endpoints', () => {
           });
       });
     });
+  });
 
+  describe('/api/games/prev', () => {
+    context('Given no games', () => {
+      beforeEach('insert users', () =>
+        helpers.seedUsers(
+          db,
+          testUsers
+        )
+      );
+
+      it('responds with 200 and an empty list and the user id', () => {
+        return supertest(app)
+          .get('/api/games/prev')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200, { result: [], userId: testUsers[0].id });
+      });
+    });
+
+    context('Given a mix of active and complete games in the db', () => {
+      beforeEach('insert games', () =>
+        helpers.seedGamesDataTable(
+          db,
+          testUsers,
+          testGames,
+          testData
+        )
+      );
+
+      it('returns correct previous game data', () => {
+       
+        return supertest(app)
+          .get('/api/games/prev')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200)
+          .then((res) => {
+            expect(res.body).to.be.an('Object');
+            expect(res.body).to.have.all.keys('result', 'userId');
+
+            expect(res.body.result).to.be.an('Array');
+            expect(res.body.result.length).to.equal(1);
+
+            expect(res.body.result[0]).to.eql({
+              game_id: 4,
+              player1_username: 'test-1',
+              player2_username: 'test-2',
+              game_status: 'complete',
+              winner: 'player1'
+            });
+
+            expect(res.body.userId).to.equal(1);
+          });
+      });
+    });
   });
 
   describe('/api/games/stats', () => {
     context('given that the user has not played any games', () => {
       let stats = [];
       testUsers.map((user, index) => {
-        stats.push({id: index+1, userid:user.id});
+        stats.push({ id: index + 1, userid: user.id });
       });
 
       beforeEach('insert new user and blank stats row into table', () =>
@@ -154,8 +224,8 @@ describe('Games Endpoints', () => {
         )
       );
 
-        it('returns stats all initialized to 0 for the logged in user', () => {
-          return supertest(app)
+      it('returns stats all initialized to 0 for the logged in user', () => {
+        return supertest(app)
           .get('/api/games/stats')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
           .expect(200, {
@@ -166,12 +236,12 @@ describe('Games Endpoints', () => {
             losses: 0,
             draws: 0
           });
-        });
+      });
     });
     context('given that the user has won and lost some games', () => {
       let stats = [];
       testUsers.map((user, index) => {
-        stats.push({id: index+1, userid:user.id});
+        stats.push({ id: index + 1, userid: user.id });
       });
 
       beforeEach('insert new user and blank stats row into table', () =>
@@ -182,19 +252,19 @@ describe('Games Endpoints', () => {
           stats
         )
       );
-      
+
       it('returns incremented wins and losses for the user', () => {
         return supertest(app)
-        .get('/api/games/stats')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(200, {
-          id: 1,
-          userid: testUsers[0].id,
-          username: testUsers[0].username,
-          wins: 2,
-          losses: 1,
-          draws: 0
-        });
+          .get('/api/games/stats')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200, {
+            id: 1,
+            userid: testUsers[0].id,
+            username: testUsers[0].username,
+            wins: 2,
+            losses: 1,
+            draws: 0
+          });
       });
     });
   });
@@ -202,41 +272,41 @@ describe('Games Endpoints', () => {
   describe('/activegame/:gameId/:playerNum', () => {
     context('given incorrect params an error is returned', () => {
       beforeEach('insert users', () =>
-      helpers.seedUsers(
-        db,
-        testUsers
-      )
-    );
+        helpers.seedUsers(
+          db,
+          testUsers
+        )
+      );
       it('returns an error when gameId is NaN', () => {
         return supertest(app)
-        .get('/api/games/activegame/wrongId/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a valid game id'});
+          .get('/api/games/activegame/wrongId/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Must send a valid game id' });
       });
 
       it('returns an error when gameId is NaN', () => {
         return supertest(app)
-        .get('/api/games/activegame/`1`/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a valid game id'});
+          .get('/api/games/activegame/`1`/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Must send a valid game id' });
       });
 
       it('returns an error when playerNum is incorrect', () => {
         return supertest(app)
-        .get('/api/games/activegame/1/player3')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a valid playerNum'});
+          .get('/api/games/activegame/1/player3')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Must send a valid playerNum' });
       });
 
       it('returns an error when playerNum is incorrect', () => {
         return supertest(app)
-        .get('/api/games/activegame/1/2')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a valid playerNum'});
+          .get('/api/games/activegame/1/2')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Must send a valid playerNum' });
       });
     });
     context('given that game data exists', () => {
-      beforeEach('insert users, game history, and game data', () => 
+      beforeEach('insert users, game history, and game data', () =>
         helpers.seedGamesDataTable(
           db,
           testUsers,
@@ -246,16 +316,16 @@ describe('Games Endpoints', () => {
       );
       it('throws an error when gameId does not exist', () => {
         return supertest(app)
-        .get('/api/games/activegame/99/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a gameId of an existing game'});
+          .get('/api/games/activegame/99/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Must send a gameId of an existing game' });
       });
 
       it('throws an error when given gameId of a completed game', () => {
         return supertest(app)
-        .get('/api/games/activegame/4/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Cannot resume a completed game'});
+          .get('/api/games/activegame/4/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(400, { error: 'Cannot resume a completed game' });
       });
 
       it('returns the correct gameData for game1 player1', () => {
@@ -270,49 +340,51 @@ describe('Games Endpoints', () => {
           id: 1,
           game_id: 1,
           turn: testGames[0].turn,
-          winner: testData[0].winner
+          winner: testData[0].winner,
+          last_move: null
         };
         return supertest(app)
-        .get('/api/games/activegame/1/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(200, expectedResult);
+          .get('/api/games/activegame/1/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .expect(200, expectedResult);
       });
     });
   });
 
 
   describe('/api/games/results/:gameId', () => {
-    beforeEach('insert users, game history, and game data', () => 
-    helpers.seedGamesDataTable(
-      db,
-      testUsers,
-      testGames,
-      testData
-    )
-  );
-      it('returns an error when given an incorrect gameId param', () => {
-        return supertest(app)
+    beforeEach('insert users, game history, and game data', () =>
+      helpers.seedGamesDataTable(
+        db,
+        testUsers,
+        testGames,
+        testData
+      )
+    );
+
+    it('returns an error when given an incorrect gameId param', () => {
+      return supertest(app)
         .get('/api/games/results/99')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Must send a gameId of an existing game'});
-      });
+        .expect(400, { error: 'Must send a gameId of an existing game' });
+    });
 
-      it('returns an error when given an incomplete gameId', () => {
-        return supertest(app)
+    it('returns an error when given an incomplete gameId', () => {
+      return supertest(app)
         .get('/api/games/results/1')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(400, {error: 'Game is not completed'});
-      });
+        .expect(400, { error: 'Game is not completed' });
+    });
 
-      it('returns the correct game data given a valid completed game', () => {
-        //this endpoint does not parse the data prior to returning it to the client.
-        let expected = testData[3];
-        expected.player1_ships = JSON.stringify(expected.player1_ships);
-        return supertest(app)
+    it('returns the correct game data given a valid completed game', () => {
+      //this endpoint does not parse the data prior to returning it to the client.
+      let expected = testData[3];
+      expected.player1_ships = JSON.stringify(expected.player1_ships);
+      return supertest(app)
         .get('/api/games/results/4')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
         .expect(200, [expected]);
-      });
+    });
   });
 
 

@@ -7,5 +7,6 @@ CREATE TABLE game_data (
   player1_misses text default null,
   player2_hits text default null,
   player2_misses text default null,
-  winner text default null
+  winner playerTurn default null,
+  last_move timestamp default null
 );

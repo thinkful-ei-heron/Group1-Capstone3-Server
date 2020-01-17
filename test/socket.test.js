@@ -599,11 +599,12 @@ describe('Socket Routes', () => {
                         expect(data.sunk).to.equal(true);
 
                         db('game_data')
-                            .select('player2_hits')
+                            .select('player2_hits', 'last_move')
                             .where({ game_id: 5 })
                             .first()
                             .then(data => {
-                                expect(data.player2_hits).to.equal('["A2","A3","A4","A5","A1"]')
+                                expect(data.player2_hits).to.equal('["A2","A3","A4","A5","A1"]');
+                                expect(data.last_move).to.not.equal(null);
 
                                 db('game_history')
                                     .select('turn')

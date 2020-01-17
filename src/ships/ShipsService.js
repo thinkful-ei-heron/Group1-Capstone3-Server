@@ -97,7 +97,7 @@ const ShipsService = {
     return db
       .from('game_data')
       .where({ game_id: gameId })
-      .update(`${playerHitString}`, newHits)
+      .update({[playerHitString]: newHits, last_move: new Date() })
       .returning('*')
       .then(rows => {
         return rows[0];
@@ -109,7 +109,7 @@ const ShipsService = {
     return db
       .from('game_data')
       .where({ game_id: gameId })
-      .update(`${playerMissString}`, newMisses)
+      .update({[playerMissString]: newMisses, last_move: new Date() })
       .returning('*')
       .then(rows => {
         return rows[0];

@@ -18,6 +18,12 @@ function makeUsersArray() {
         password: 'pass',
         email: 'test2Email@gmail.com',
       },
+      {
+        id: 3,
+        username: 'test-3',
+        password: 'pass',
+        email: 'test3Email@gmail.com',
+      }
     ]
   };
 
@@ -58,6 +64,15 @@ function makeGameHistoryArray(){
         next: null,
         turn: 'player2',
         game_status: 'complete'
+      },
+      {
+        id: 5,
+        player1: 1,
+        player2: 2,
+        room_id: "500",
+        next: null,
+        turn: 'player2',
+        game_status: 'active'
       }
     ]
   };
@@ -77,7 +92,8 @@ function makeGamesDataArray(){
       player1_misses: null,
       player2_hits: null,
       player2_misses:null,
-      winner: null
+      winner: null,
+      last_move: null
     },
     {
       id: 2,
@@ -93,7 +109,8 @@ function makeGamesDataArray(){
       player1_misses: null,
       player2_hits: null,
       player2_misses:null,
-      winner: null
+      winner: null,
+      last_move: null
     },
     {
       id: 3,
@@ -109,7 +126,8 @@ function makeGamesDataArray(){
       player1_misses: null,
       player2_hits: null,
       player2_misses:null,
-      winner: null
+      winner: null,
+      last_move: null
     },
     {
       id: 4,
@@ -125,8 +143,26 @@ function makeGamesDataArray(){
       player1_misses: null,
       player2_hits: null,
       player2_misses:null,
-      winner: 'player1'
+      winner: 'player1',
+      last_move: null
     },
+    {
+      id: 5,
+      game_id: 5,
+      player1_ships: 
+      [{ 'name': 'aircraftCarrier', 'length': 5, 'spaces': ['A1', 'A2', 'A3', 'A4', 'A5'] },
+      { 'name': 'battleship', 'length': 4, 'spaces': ['B1', 'B2', 'B3', 'B4'] },
+      { 'name': 'cruiser', 'length': 3, 'spaces': ['C1', 'C2', 'C3']  },
+      { 'name': 'submarine', 'length': 3, 'spaces': ['D1', 'D2', 'D3'] },
+      { 'name': 'defender', 'length': 2, 'spaces': ['E1', 'E2'] }],
+      player2_ships: null,
+      player1_hits: null,
+      player1_misses: null,
+      player2_hits: null,
+      player2_misses:null,
+      winner: null,
+      last_move: new Date("2016-07-27T07:45:00Z")
+    }
   ]
 }
 
@@ -218,7 +254,8 @@ function seedGamesDataTable(db, users, games, data) {
           player1_misses: game.player1_misses,
           player2_hits: game.player2_hits,
           player2_misses: game.player2_misses,
-          winner: game.winner
+          winner: game.winner,
+          last_move: game.last_move
         })
       })
     

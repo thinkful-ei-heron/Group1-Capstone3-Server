@@ -163,7 +163,7 @@ describe('/ships route', () => {
                 .expect(201)
                 .then((res) => {
                     expect(res.body).to.be.an('Object');
-                    expect(res.body).to.have.all.keys('id', 'game_id', 'player1_ships', 'player2_ships', 'player1_hits', 'player2_hits', 'player1_misses', 'player2_misses', 'winner');
+                    expect(res.body).to.have.all.keys('id', 'game_id', 'player1_ships', 'player2_ships', 'player1_hits', 'player2_hits', 'player1_misses', 'player2_misses', 'winner', 'last_move');
                     expect(res.body.game_id).to.equal(1);
                     expect(JSON.parse(res.body.player1_ships)).to.eql(testShips);
 
