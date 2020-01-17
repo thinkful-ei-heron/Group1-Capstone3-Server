@@ -6,7 +6,9 @@ CREATE TYPE playerTurn AS ENUM (
 
 CREATE TYPE gameStatus AS ENUM (
     'active',
-    'complete'
+    'complete',
+    'expired',
+    'forfeited'
 );
 
 create table if not exists game_history (

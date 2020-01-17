@@ -98,6 +98,18 @@ const GamesService = {
       });
   },
 
+  //forfeitGame
+  forfeitGame(db, game_id){
+    return db
+      .from('game_history')
+      .where({ id: game_id })
+      .update({ game_status: 'forfeited' })
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
   //increments the winner's win stats by 1
   updateWinnerStats(db, winner_id) {
     return db
