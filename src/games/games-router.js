@@ -1,6 +1,7 @@
 const express = require('express');
 const gamesRouter = express.Router();
 const GamesService = require('./GamesService');
+const jsonBodyParser = express.json();
 
 
 gamesRouter
@@ -9,7 +10,7 @@ gamesRouter
   .get(async (req, res, next) => {
     const db = req.app.get('db');
     const userId = req.app.get('user').id;
-
+  
     //Checks for any games that have expired
     let expiredGames = await GamesService.getExpiredGames(db, userId);
 
@@ -103,7 +104,34 @@ gamesRouter
       res.status(200).json(gameData);
     })
       .catch(next);
-  });
+  })
+  .patch(jsonBodyParser, (req, res, next) => {
+    const knexInstance = req.app.get('db');
+    const { gameId } = req.params;
+    const { opponentNum, opponentId } = req.body;
+    const userId = req.app.get('user').id;
+    
+    //check to see if this game has already been forfeited/completed
+    //if it has not, then proceed to update game_history, game_data, and user stats
+    GamesService.getGameData(knexInstance, gameId)
+    .then((data) => {
+
+      if(!data) {
+        return res.status(400).json({error: 'invalid game id'});
+      }
+      else if(data.winner) {
+        return res.status(400).json({error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired'});
+      } 
+      else {
+        GamesService.updateGameDataWin(knexInstance, gameId, opponentNum);
+        GamesService.forfeitGame(knexInstance, gameId);
+        GamesService.updateWinnerStats(knexInstance, opponentId);
+        GamesService.updateLoserStats(knexInstance, userId);
+        return res.status(200).json({message:'Game forfeited'});
+    }
+  })
+  .catch(next);
+});
 
 //this endpoint retrieves all of the data from the game_data table for the finished game.
 gamesRouter

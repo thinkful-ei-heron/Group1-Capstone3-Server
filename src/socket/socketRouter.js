@@ -23,9 +23,13 @@ const socketRouter = function (io, db) {
 
                     //Checks to see if first in queue is you
                     let playingYourself = await socketService.checkPlayingYourself(db, room.first, playerId);
+                    let activeGames = await socketService.checkNumOfGamesActive(db, playerId)
 
+                    if (activeGames.length >= 10) {
+                        socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
+                    }
 
-                    if (playingYourself.player1 === playerId) {
+                    else if (playingYourself.player1 === playerId) {
                         socket.emit('error-message', { error: 'You can only have one game in the queue at a given time. Please wait for someone else to match against you.' });
 
                     } else {
@@ -43,7 +47,6 @@ const socketRouter = function (io, db) {
                 else {
                     //Returns all active games that the player is a part of
                     let activeGames = await socketService.checkNumOfGamesActive(db, playerId)
-
 
                     if (activeGames.length >= 10) {
                         socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
@@ -93,7 +96,7 @@ const socketRouter = function (io, db) {
         socket.on('fire', async (data) => {
             const { target, gameId, roomId} = data;
             let playerId = socket.userInfo.id;
-
+            
             //Default the target is correct
             let targetIncorrectBool = false;
             //All possible first characters of target
@@ -109,7 +112,7 @@ const socketRouter = function (io, db) {
             //Gets entire game_history table in accordance with the sockets requested gameId
             let gameHistory = await GamesService.getGameHistory(db, gameId);
 
-
+            
             //If the selected target doesn't meet the above criteria
             if(targetIncorrectBool) {
                 socket.emit('error-message', {error: 'The target youve selected is out of bounds'});

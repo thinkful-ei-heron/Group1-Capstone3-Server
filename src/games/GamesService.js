@@ -139,6 +139,19 @@ const GamesService = {
   },
 
 
+  //forfeitGame changes game_status to 'forfeited'
+  forfeitGame(db, game_id){
+    return db
+      .from('game_history')
+      .where({ id: game_id })
+      .update({ game_status: 'forfeited' })
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+
   expireGame(db, game_id) {
     return db
       .from('game_history')
