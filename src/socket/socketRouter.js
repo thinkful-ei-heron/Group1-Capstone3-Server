@@ -107,7 +107,7 @@ const socketRouter = function (io, db) {
             //If second character isn't a number
             else if(!parseInt(target.charAt(1))) targetIncorrectBool = true;
             //If third character exists but is not 0
-            else if(target.length === 3 && parseInt(target.charAt(3)) !== 0) targetIncorrectBool = true;
+            else if(target.length === 3 && parseInt(target.charAt(2)) !== 0) targetIncorrectBool = true;
             
             //Gets entire game_history table in accordance with the sockets requested gameId
             let gameHistory = await GamesService.getGameHistory(db, gameId);
