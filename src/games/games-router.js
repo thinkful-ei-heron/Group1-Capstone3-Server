@@ -7,14 +7,48 @@ const jsonBodyParser = express.json();
 gamesRouter
   //this endpoint retrives all of the logged in user's active games
   .route('/')
-  .get((req, res, next) => {
-    const knexInstance = req.app.get('db');
+  .get(async (req, res, next) => {
+    const db = req.app.get('db');
     const userId = req.app.get('user').id;
-    GamesService.getAllActiveGames(knexInstance, userId).then(result => {
-      return res.status(200).json({ result, userId });
-    })
-      .catch(next);
+  
+    //Checks for any games that have expired
+    let expiredGames = await GamesService.getExpiredGames(db, userId);
+
+    //If any games have expired
+    if (expiredGames.length) {
+      await expiredGames.forEach(async game => {
+        winnerString = game.turn === 'player1' ? 'player2' : 'player1';
+        winnerId = game.turn === 'player1' ? game.player2 : game.player1;
+        loserId = game.turn === 'player1' ? game.player1 : game.player2;
+
+        //Make calls to db to update expired games and both players stats
+        await Promise.all([
+          GamesService.updateGameDataWin(db, game.game_data_id, winnerString),
+          GamesService.expireGame(db, game.game_id),
+          GamesService.updateWinnerStats(db, winnerId),
+          GamesService.updateLoserStats(db, loserId)
+        ]);
+      });
+
+    }
+
+    //Returns only games that are active
+    let activeGames = await GamesService.getAllActiveGames(db, userId);
+    return res.status(200).json({ result: activeGames, userId });
+
   });
+
+
+gamesRouter
+  .route('/prev')
+  .get(async (req, res, next) => {
+    const db = req.app.get('db');
+    const userId = req.app.get('user').id;
+
+    let previousGames = await GamesService.getAllPreviousGames(db, userId);
+    return res.status(200).json({result: previousGames, userId});
+
+  })
 
 //this endpoint retreives the logged in user's game stats
 gamesRouter
@@ -98,7 +132,6 @@ gamesRouter
   })
   .catch(next);
 });
-  
 
 //this endpoint retrieves all of the data from the game_data table for the finished game.
 gamesRouter

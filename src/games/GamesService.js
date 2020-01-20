@@ -17,6 +17,46 @@ const GamesService = {
       });
   },
 
+  getAllPreviousGames(db, userId) {
+    return db
+      .select('game_history.id as game_id',
+        'player1.username as player1_username',
+        'player2.username as player2_username', 'game_status', 'winner')
+      .from('game_history')
+      .where('game_status', '!=', 'active')
+      .andWhere(q => {
+        q.where({ player1: userId});
+        q.orWhere({ player2: userId});
+      })
+      .join('users as player1', 'player1.id', 'game_history.player1')
+      .join('game_data', 'game_data.game_id', 'game_history.id' )
+      .leftJoin('users as player2', 'player2.id', 'game_history.player2')
+      .returning('*')
+      .then(rows => {
+        return rows;
+      });
+  },
+
+
+  getExpiredGames(db, userId) {
+    return db
+      .select('player1', 'player2', 'turn', 'game_id', 'game_data.id as game_data_id')
+      .from('game_history')
+      .join('game_data', 'game_data.game_id', 'game_history.id' )
+      .whereRaw('( now() - interval \'3 days\') > game_data.last_move')
+      .andWhere(q => {
+        q.where({'game_history.player1': userId, 'game_history.game_status': 'active'});
+        q.orWhere({'game_history.player2': userId, 'game_history.game_status': 'active'});
+      })
+      .returning('*')
+      .then(rows => {
+        return rows;
+      });
+      
+  },
+
+
+
   //retrieves all of the game data and joins with game_history to return who's turn it is.
   retrieveGameData(db, gameId) {
     return db
@@ -98,12 +138,25 @@ const GamesService = {
       });
   },
 
-  //forfeitGame
+
+  //forfeitGame changes game_status to 'forfeited'
   forfeitGame(db, game_id){
     return db
       .from('game_history')
       .where({ id: game_id })
       .update({ game_status: 'forfeited' })
+      .returning('*')
+      .then(rows => {
+        return rows[0];
+      });
+  },
+
+
+  expireGame(db, game_id) {
+    return db
+      .from('game_history')
+      .where({ id: game_id })
+      .update({ game_status: 'expired' })
       .returning('*')
       .then(rows => {
         return rows[0];
