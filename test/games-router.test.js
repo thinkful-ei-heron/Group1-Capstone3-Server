@@ -99,8 +99,8 @@ describe('Games Endpoints', () => {
                   next: null,
                   turn: 'player2',
                   game_status: 'expired'
-                })
-              })
+                });
+              });
           });
       });
     });
