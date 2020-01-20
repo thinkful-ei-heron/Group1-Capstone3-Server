@@ -48,7 +48,6 @@ const socketRouter = function (io, db) {
                     //Returns all active games that the player is a part of
                     let activeGames = await socketService.checkNumOfGamesActive(db, playerId)
 
-                    console.log(activeGames);
                     if (activeGames.length >= 10) {
                         socket.emit('error-message', { error: 'You can only have up to 10 active games at any time.' });
                     } else {
@@ -97,7 +96,7 @@ const socketRouter = function (io, db) {
         socket.on('fire', async (data) => {
             const { target, gameId, roomId} = data;
             let playerId = socket.userInfo.id;
-
+            
             //Default the target is correct
             let targetIncorrectBool = false;
             //All possible first characters of target
@@ -113,7 +112,7 @@ const socketRouter = function (io, db) {
             //Gets entire game_history table in accordance with the sockets requested gameId
             let gameHistory = await GamesService.getGameHistory(db, gameId);
 
-
+            
             //If the selected target doesn't meet the above criteria
             if(targetIncorrectBool) {
                 socket.emit('error-message', {error: 'The target youve selected is out of bounds'});
