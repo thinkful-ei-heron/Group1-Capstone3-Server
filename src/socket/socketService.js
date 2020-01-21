@@ -150,10 +150,11 @@ const socketService = {
     checkNumOfGamesActive(db, playerId) {
         return db('game_history')
             .select('id')
-            .where({ player1: playerId })
-            .orWhere({ player2: playerId })
-            .andWhere({ game_status: 'active' });
-
+            .where('game_status', '=', 'active')
+            .andWhere(q => {
+                q.where({ player1: playerId});
+                q.orWhere({ player2: playerId});
+            });
     },
 
 

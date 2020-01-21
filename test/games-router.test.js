@@ -349,6 +349,39 @@ describe('Games Endpoints', () => {
           .expect(200, expectedResult);
       });
     });
+    context('PATCH endpoint', () => {
+      beforeEach('insert users, game history, and game data', () => 
+        helpers.seedGamesDataTable(
+          db,
+          testUsers,
+          testGames,
+          testData
+        )
+      );
+      it('returns 400 and error when trying to forfeit an game that does not exist', () => {
+        return supertest(app)
+        .patch('/api/games/activegame/99/player1')
+        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+        .send({opponentNum:'player2', opponentId: 2})
+        .expect(400, {error: 'invalid game id'});
+        });
+
+      it('returns 400 and error when trying to forfeit an already ended game', () => {
+        return supertest(app)
+        .patch('/api/games/activegame/4/player1')
+        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+        .send({opponentNum:'player2', opponentId: 2})
+        .expect(400, {error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired'});
+        });
+
+      it('returns the correct message when forfeiting a game', () => {
+      return supertest(app)
+      .patch('/api/games/activegame/1/player1')
+      .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+      .send({opponentNum:'player2', opponentId: 2})
+      .expect(200, {message: 'Game forfeited'});
+      });
+    });
   });
 
 
@@ -386,6 +419,7 @@ describe('Games Endpoints', () => {
         .expect(200, [expected]);
     });
   });
+
 
 
 

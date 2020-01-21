@@ -213,7 +213,7 @@ describe('Socket Routes', () => {
                 { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2' }, { player1: 1, player2: 2, room_id: '3' },
                 { player1: 1, player2: 2, room_id: '4' }, { player1: 1, player2: 2, room_id: '5' }, { player1: 1, player2: 2, room_id: '6' },
                 { player1: 1, player2: 2, room_id: '7' }, { player1: 1, player2: 2, room_id: '8' }, { player1: 1, player2: 2, room_id: '9' },
-                { player1: 1, player2: 2, room_id: '10', game_status: 'complete' }, { player1: 3, player2: 2, room_id: '11' }]
+                { player1: 1, player2: 2, room_id: '10', game_status: 'complete' }, { player1: 3, player2: 2, room_id: '11' }, { player1: 1, player2: 2, room_id: '12' }]
 
 
             beforeEach(async () => {
