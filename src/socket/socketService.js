@@ -19,10 +19,17 @@ const socketService = {
 
     updatePlayer2(db, playerId, gameId) {
         return db('game_history')
-        .where({ id: gameId })
-        .update({
-            player2: playerId
-        });
+            .where({ id: gameId })
+            .update({
+                player2: playerId
+            })
+            .then(() => {
+                return db('game_history')
+                    .select('player1.username as player1_username')
+                    .where({ 'game_history.id': gameId })
+                    .join('users as player1', 'player1.id', 'game_history.player1')
+                    .first();
+            });
     },
 
 
@@ -100,7 +107,7 @@ const socketService = {
         }
     },
 
-    
+
     setNewGameData(db, gameId) {
         return db
             .insert({ game_id: gameId })
@@ -119,7 +126,7 @@ const socketService = {
             .select('turn')
             .first()
             .then(turn => {
-                let newTurn = (turn.turn === 'player1') ? 'player2': 'player1';
+                let newTurn = (turn.turn === 'player1') ? 'player2' : 'player1';
 
                 return db('game_history')
                     .where({ id: gameId })
@@ -133,7 +140,7 @@ const socketService = {
 
     checkPlayingYourself(db, first) {
         return db('game_history')
-            .where({id: first})
+            .where({ id: first })
             .select('player1')
             .first();
     },
@@ -143,18 +150,18 @@ const socketService = {
     checkNumOfGamesActive(db, playerId) {
         return db('game_history')
             .select('id')
-            .where({player1: playerId})
-            .orWhere({player2: playerId})
-            .andWhere({game_status: 'active'});
-            
+            .where({ player1: playerId })
+            .orWhere({ player2: playerId })
+            .andWhere({ game_status: 'active' });
+
     },
-    
+
 
 
     findGame(db, room) {
         return db('game_history')
             .select('*')
-            .where({room_id : room})
+            .where({ room_id: room })
             .first();
     }
 };

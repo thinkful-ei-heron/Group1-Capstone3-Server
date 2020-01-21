@@ -32,11 +32,17 @@ describe('/signup route', () => {
                     .send({ password: 'pass', email: 'email'})
                     .expect(400, {error: 'Must provide username.'});
             });
-            it('returns 400 if invalid username', () => {
+            it('returns 400 if username is longer than 20 characters', () => {
                 return supertest(app)
                     .post('/api/signup')
                     .send({ username: 'usernamethatiswaaaayyytoolongandismorethan20characters' , password: 'pass', email: 'email'})
                     .expect(400, {error: 'Username cannot exceed 20 characters'});
+            });
+            it('returns 400 if username contains a space', () => {
+                return supertest(app)
+                    .post('/api/signup')
+                    .send({ username: 'this is not okay' , password: 'pass', email: 'email'})
+                    .expect(400, {error: 'Username cannot contain a space.'});
             });
         });
         

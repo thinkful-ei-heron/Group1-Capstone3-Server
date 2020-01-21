@@ -164,11 +164,11 @@ describe('Games Endpoints', () => {
         )
       );
 
-      it('responds with 200 and an empty list and the user id', () => {
+      it('responds with 200 and an empty list and the user id/username', () => {
         return supertest(app)
           .get('/api/games/prev')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, { result: [], userId: testUsers[0].id });
+          .expect(200, { result: [], userId: testUsers[0].id, playerUsername: 'test-1'});
       });
     });
 
@@ -190,7 +190,7 @@ describe('Games Endpoints', () => {
           .expect(200)
           .then((res) => {
             expect(res.body).to.be.an('Object');
-            expect(res.body).to.have.all.keys('result', 'userId');
+            expect(res.body).to.have.all.keys('result', 'userId', 'playerUsername');
 
             expect(res.body.result).to.be.an('Array');
             expect(res.body.result.length).to.equal(1);

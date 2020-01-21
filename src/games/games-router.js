@@ -43,9 +43,10 @@ gamesRouter
   .get(async (req, res, next) => {
     const db = req.app.get('db');
     const userId = req.app.get('user').id;
+    const playerUsername = req.app.get('user').username;
 
     let previousGames = await GamesService.getAllPreviousGames(db, userId);
-    return res.status(200).json({result: previousGames, userId});
+    return res.status(200).json({result: previousGames, userId, playerUsername});
 
   })
 

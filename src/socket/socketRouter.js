@@ -1,6 +1,4 @@
 const xss = require('xss');
-const io = require('../server');
-const socket = require('socket.io');
 const socketService = require('./socketService');
 const ShipsService = require('../ships/ShipsService');
 const GamesService = require('../games/GamesService');
@@ -8,12 +6,12 @@ const GamesService = require('../games/GamesService');
 const socketRouter = function (io, db) {
 
     io.on('connection', function (socket) {
-        // console.log('connected', socket.id);
+        // console.log('connected', socket.userInfo);
 
         //Connects sockets to rooms
         socket.on('join_room', async (room) => {
             let playerId = socket.userInfo.id;
-
+            
             //If a random room is requested
             if (room === 'random') {
                 let room = await socketService.findRoom(db);
@@ -33,11 +31,14 @@ const socketRouter = function (io, db) {
                         let roomName = await socketService.dequeue(db, room);
 
                         //changes player 2 for the game that was at the front of the queue
-                        await socketService.updatePlayer2(db, playerId, roomName.id);
-
+                        let player1Username = await socketService.updatePlayer2(db, playerId, roomName.id);
+                        
                         //Join and notify the socket
                         socket.join(roomName.room_id);
-                        socket.emit('joined', { room: roomName.room_id, player: 'player2', gameId: roomName.id })
+                        socket.emit('joined', { room: roomName.room_id, player: 'player2', gameId: roomName.id });
+                        //Let both players know the other's user name
+                        socket.emit('usernames', {usernames: {player: socket.userInfo.username, opponent: player1Username.player1_username }})
+                        socket.broadcast.to(roomName.room_id).emit('usernames', {usernames: {player: player1Username.player1_username, opponent: socket.userInfo.username }})
                     }
                 }
                 else {
@@ -104,7 +105,7 @@ const socketRouter = function (io, db) {
             //If second character isn't a number
             else if(!parseInt(target.charAt(1))) targetIncorrectBool = true;
             //If third character exists but is not 0
-            else if(target.length === 3 && parseInt(target.charAt(3)) !== 0) targetIncorrectBool = true;
+            else if(target.length === 3 && parseInt(target.charAt(2)) !== 0) targetIncorrectBool = true;
             
             //Gets entire game_history table in accordance with the sockets requested gameId
             let gameHistory = await GamesService.getGameHistory(db, gameId);

@@ -43,6 +43,9 @@ const signupService = {
         if(username.length > 20) {
             return 'Username cannot exceed 20 characters';
         }
+        if(username.includes(' ')) {
+            return 'Username cannot contain a space.';
+        }
     },
     //Makes sure password passes all tests
     validatePassword(password) {
