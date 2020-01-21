@@ -95,7 +95,7 @@ describe('Games Endpoints', () => {
                   id: 5,
                   player1: 1,
                   player2: 2,
-                  room_id: "500",
+                  room_id: "b46c97ff-e6b1-4543-beb1-461139fa731b",
                   next: null,
                   turn: 'player2',
                   game_status: 'expired'
@@ -233,8 +233,7 @@ describe('Games Endpoints', () => {
             userid: testUsers[0].id,
             username: testUsers[0].username,
             wins: 0,
-            losses: 0,
-            draws: 0
+            losses: 0
           });
       });
     });
@@ -262,8 +261,7 @@ describe('Games Endpoints', () => {
             userid: testUsers[0].id,
             username: testUsers[0].username,
             wins: 2,
-            losses: 1,
-            draws: 0
+            losses: 1
           });
       });
     });

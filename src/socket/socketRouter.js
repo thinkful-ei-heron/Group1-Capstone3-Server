@@ -2,6 +2,7 @@ const xss = require('xss');
 const socketService = require('./socketService');
 const ShipsService = require('../ships/ShipsService');
 const GamesService = require('../games/GamesService');
+const uuid = require('uuid/v4');
 
 const socketRouter = function (io, db) {
 
@@ -54,7 +55,7 @@ const socketRouter = function (io, db) {
                     } else {
 
                         //Creates a random string for the room_id
-                        let randomString = `${Math.floor(Math.random() * 1000)}`;
+                        let randomString = uuid();
                         let gameHistoryId = await socketService.makeRoom(db, playerId, randomString);
 
                         //Enqueues the game and initializes a new row for the game_data

@@ -5,9 +5,9 @@ const io = require('socket.io-client');
 
 describe('Socket Routes', () => {
     let db;
-    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail@gmail.com' };
-    let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail2@gmail.com' };
-    let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail3@gmail.com' };
+    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG'};
+    let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
+    let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
 
     let testShips = `[{"name":"aircraftCarrier","length":5,"spaces":["A1","A2","A3","A4","A5"]},{"name":"battleship","length":4,"spaces":["A6","A7","A8","A9"]},{"name":"cruiser","length":3,"spaces":["A10","B10","C10"]},{"name":"submarine","length":3,"spaces":["D10","E10","F10"]},{"name":"defender","length":2,"spaces":["I10","H10"]}]`;
     let testShips2 = `[{"name":"aircraftCarrier","length":5,"spaces":["A1","B1","C1","D1","E1"]},{"name":"battleship","length":4,"spaces":["F1","G1","H1","I1"]},{"name":"cruiser","length":3,"spaces":["J1","J2","J3"]},{"name":"submarine","length":3,"spaces":["J4","J5","J6"]},{"name":"defender","length":2,"spaces":["J7","J8"]}]`;
@@ -139,7 +139,7 @@ describe('Socket Routes', () => {
                     .insert([testUser, testUser2])
                     .then(() => {
                         db.into('game_history')
-                            .insert({ player1: 2, room_id: '1234' })
+                            .insert({ player1: 2, room_id: 'b46c97ff-e6b1-4543-beb1-461139fa731b' })
                             .then(() => {
                                 return db.into('room_queue')
                                     .insert({ size: 1, first: 1, last: 1 })
@@ -160,7 +160,7 @@ describe('Socket Routes', () => {
                         expect(data).to.have.all.keys('room', 'player', 'gameId');
                         expect(data.player).to.equal('player2');
                         expect(data.gameId).to.equal(1);
-                        expect(data.room).to.equal('1234')
+                        expect(data.room).to.equal('b46c97ff-e6b1-4543-beb1-461139fa731b')
 
                         client.disconnect(true);
                         done();
@@ -181,7 +181,7 @@ describe('Socket Routes', () => {
                     .insert([testUser, testUser2])
                     .then(() => {
                         db.into('game_history')
-                            .insert({ player1: 1, room_id: '1234' })
+                            .insert({ player1: 1, room_id: 'b46c97ff-e6b1-4543-beb1-461139fa731b' })
                             .then(() => {
                                 return db.into('room_queue')
                                     .insert({ size: 1, first: 1, last: 1 })
@@ -207,13 +207,13 @@ describe('Socket Routes', () => {
 
 
 
-        context('10 active games', () => {
+        context('12 active games', () => {
 
             let tenGames = [
-                { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2' }, { player1: 1, player2: 2, room_id: '3' },
-                { player1: 1, player2: 2, room_id: '4' }, { player1: 1, player2: 2, room_id: '5' }, { player1: 1, player2: 2, room_id: '6' },
-                { player1: 1, player2: 2, room_id: '7' }, { player1: 1, player2: 2, room_id: '8' }, { player1: 1, player2: 2, room_id: '9' },
-                { player1: 1, player2: 2, room_id: '10', game_status: 'complete' }, { player1: 3, player2: 2, room_id: '11' }, { player1: 1, player2: 2, room_id: '12' }]
+                { player1: 1, player2: 2, room_id: '5e9e5bc9-1003-4653-a256-62dff4718a40' }, { player1: 1, player2: 2, room_id: '08835d9b-13e1-4738-a77f-d4847f3440c8' }, { player1: 1, player2: 2, room_id: 'bd45bf1f-7cc1-4f8a-b522-dd6e61a8b6ed' },
+                { player1: 1, player2: 2, room_id: 'aa4fc501-3763-40ea-9809-26c7eed99e39' }, { player1: 1, player2: 2, room_id: '81eca796-2332-4263-8fd1-224be8d17901' }, { player1: 1, player2: 2, room_id: '8e89ba7f-eb56-498d-ac37-8e40bbbcbd76' },
+                { player1: 1, player2: 2, room_id: '470bcfb7-7570-49a9-8545-e45ef544c41a' }, { player1: 1, player2: 2, room_id: '1e73fe99-8a34-4d13-896b-c77d52dabf66' }, { player1: 1, player2: 2, room_id: '234e8b82-7489-4ce6-a427-25fda43026cd' },
+                { player1: 1, player2: 2, room_id: '470da57a-f37c-4740-989d-15decc0cf62f', game_status: 'complete' }, { player1: 3, player2: 2, room_id: '4c3014d4-be74-4141-a7f3-6258c31ae913' }, { player1: 1, player2: 2, room_id: 'eba53681-2798-4109-ac26-3fdeae580a7c' }]
 
 
             beforeEach(async () => {
@@ -250,13 +250,13 @@ describe('Socket Routes', () => {
 
                 client.on('connect', () => {
                     client.on('reconnected', data => {
-                        expect(data).to.eql({ room: '3' });
+                        expect(data).to.eql({ room: 'bd45bf1f-7cc1-4f8a-b522-dd6e61a8b6ed' });
 
                         client.disconnect(true);
                         done();
                     });
 
-                    client.emit('join_room', '3');
+                    client.emit('join_room', 'bd45bf1f-7cc1-4f8a-b522-dd6e61a8b6ed');
                 });
             });
 
@@ -272,7 +272,7 @@ describe('Socket Routes', () => {
                         done();
                     });
 
-                    client.emit('join_room', '11');
+                    client.emit('join_room', '4c3014d4-be74-4141-a7f3-6258c31ae913');
                 });
             });
 
@@ -288,14 +288,14 @@ describe('Socket Routes', () => {
                         done();
                     });
 
-                    client.emit('join_room', '10');
+                    client.emit('join_room', '470da57a-f37c-4740-989d-15decc0cf62f');
                 });
             });
         });
     });
 
     describe('Socket in active game', () => {
-        let activeGame = { player1: 1, player2: 2, room_id: '1' }
+        let activeGame = { player1: 1, player2: 2, room_id: '2751320b-3f1e-43c3-a1f7-d6649369659e' }
 
         beforeEach(async () => {
             await db.into('users')
@@ -326,17 +326,17 @@ describe('Socket Routes', () => {
                     });
                 });
 
-                client.emit('join_room', '1');
+                client.emit('join_room', '2751320b-3f1e-43c3-a1f7-d6649369659e');
             });
 
             client2.on('connect', () => {
                 client2.on('reconnected', () => {
 
-                    client2.emit('ships_ready', '1')
+                    client2.emit('ships_ready', '2751320b-3f1e-43c3-a1f7-d6649369659e')
                     client2.disconnect(true);
                 });
 
-                client2.emit('join_room', '1');
+                client2.emit('join_room', '2751320b-3f1e-43c3-a1f7-d6649369659e');
             });
         });
 
@@ -359,17 +359,17 @@ describe('Socket Routes', () => {
                     });
                 });
 
-                client.emit('join_room', '1');
+                client.emit('join_room', '2751320b-3f1e-43c3-a1f7-d6649369659e');
             });
 
             client2.on('connect', () => {
                 client2.on('reconnected', () => {
 
-                    client2.emit('send-message', { room: '1', message: 'This test is working' })
+                    client2.emit('send-message', { room: '2751320b-3f1e-43c3-a1f7-d6649369659e', message: 'This test is working' })
                     client2.disconnect(true);
                 });
 
-                client2.emit('join_room', '1');
+                client2.emit('join_room', '2751320b-3f1e-43c3-a1f7-d6649369659e');
             });
         });
 
@@ -384,9 +384,9 @@ describe('Socket Routes', () => {
     describe('Socket fire', () => {
 
         let games = [
-            { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2', game_status: 'complete' },
-            { player1: 3, player2: 2, room_id: '3' }, { player1: 1, player2: 2, room_id: '4' }, { player1: 1, player2: 2, room_id: '5', turn: 'player2' },
-            { player1: 1, player2: 2, room_id: '6', turn: 'player2' }
+            { player1: 1, player2: 2, room_id: 'a23c48a7-d380-430b-9abc-a6a6ceeeadc0' }, { player1: 1, player2: 2, room_id: '37ec2818-2f13-44af-979c-94048ce2b612', game_status: 'complete' },
+            { player1: 3, player2: 2, room_id: 'bd45bf1f-7cc1-4f8a-b522-dd6e61a8b6ed' }, { player1: 1, player2: 2, room_id: '1088813e-7310-41a1-bccf-596dfbfb65c0' }, { player1: 1, player2: 2, room_id: '5b864635-1700-46c9-8bfd-3f8cb2854b63', turn: 'player2' },
+            { player1: 1, player2: 2, room_id: 'fce92a33-d8c0-40bf-a08b-7bf603d32576', turn: 'player2' }
         ];
 
         let gameData = [
@@ -437,7 +437,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A3', gameId: 2, roomId: '2' });
+                client.emit('fire', { target: 'A3', gameId: 2, roomId: '37ec2818-2f13-44af-979c-94048ce2b612' });
             });
         });
 
@@ -452,7 +452,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A3', gameId: 3, roomId: '3' });
+                client.emit('fire', { target: 'A3', gameId: 3, roomId: 'bd45bf1f-7cc1-4f8a-b522-dd6e61a8b6ed' });
             });
         });
 
@@ -467,7 +467,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A3', gameId: 1, roomId: '9999' });
+                client.emit('fire', { target: 'A3', gameId: 1, roomId: '758ea570-55df-4ea6-8d27-6fa89a61a1e3' });
             });
         });
 
@@ -483,7 +483,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A3', gameId: 4, roomId: '4' });
+                client.emit('fire', { target: 'A3', gameId: 4, roomId: '1088813e-7310-41a1-bccf-596dfbfb65c0' });
             });
         });
 
@@ -498,7 +498,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A1', gameId: 5, roomId: '5' });
+                client.emit('fire', { target: 'A1', gameId: 5, roomId: '5b864635-1700-46c9-8bfd-3f8cb2854b63' });
             });
         });
 
@@ -516,7 +516,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A', gameId: 4, roomId: '4' });
+                client.emit('fire', { target: 'A', gameId: 4, roomId: '1088813e-7310-41a1-bccf-596dfbfb65c0' });
             });
         });
 
@@ -531,7 +531,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'Z3', gameId: 4, roomId: '4' });
+                client.emit('fire', { target: 'Z3', gameId: 4, roomId: '1088813e-7310-41a1-bccf-596dfbfb65c0' });
             });
         });
 
@@ -546,7 +546,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'Ab', gameId: 4, roomId: '4' });
+                client.emit('fire', { target: 'Ab', gameId: 4, roomId: '1088813e-7310-41a1-bccf-596dfbfb65c0' });
             });
         });
 
@@ -561,7 +561,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'A76', gameId: 4, roomId: '4' });
+                client.emit('fire', { target: 'A76', gameId: 4, roomId: '1088813e-7310-41a1-bccf-596dfbfb65c0' });
             });
         });
 
@@ -576,7 +576,7 @@ describe('Socket Routes', () => {
                     done();
                 });
 
-                client.emit('fire', { target: 'D8', gameId: 1, roomId: '1' });
+                client.emit('fire', { target: 'D8', gameId: 1, roomId: 'a23c48a7-d380-430b-9abc-a6a6ceeeadc0' });
             });
         });
 
@@ -619,7 +619,7 @@ describe('Socket Routes', () => {
                     });
                 });
 
-                client.emit('join_room', '5');
+                client.emit('join_room', '5b864635-1700-46c9-8bfd-3f8cb2854b63');
             });
 
             client2.on('connect', () => {
@@ -635,10 +635,10 @@ describe('Socket Routes', () => {
                         client2.disconnect(true);
                     });
 
-                    client2.emit('fire', { target: 'A1', gameId: 5, roomId: '5' })
+                    client2.emit('fire', { target: 'A1', gameId: 5, roomId: '5b864635-1700-46c9-8bfd-3f8cb2854b63' })
                 });
 
-                client2.emit('join_room', '5');
+                client2.emit('join_room', '5b864635-1700-46c9-8bfd-3f8cb2854b63');
             });
         });
 
@@ -675,7 +675,7 @@ describe('Socket Routes', () => {
                     });
                 });
 
-                client.emit('join_room', '6');
+                client.emit('join_room', 'fce92a33-d8c0-40bf-a08b-7bf603d32576');
             });
 
             client2.on('connect', () => {
@@ -688,10 +688,10 @@ describe('Socket Routes', () => {
                         client2.disconnect(true);
                     });
 
-                    client2.emit('fire', { target: 'A1', gameId: 6, roomId: '6' })
+                    client2.emit('fire', { target: 'A1', gameId: 6, roomId: 'fce92a33-d8c0-40bf-a08b-7bf603d32576' })
                 });
 
-                client2.emit('join_room', '6');
+                client2.emit('join_room', 'fce92a33-d8c0-40bf-a08b-7bf603d32576');
             });
         });
 

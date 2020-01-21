@@ -10,19 +10,16 @@ function makeUsersArray() {
         id: 1,
         username: 'test-1',
         password: 'pass', 
-        email: 'test1Email@gmail.com',
       },
       {
         id: 2,
         username: 'test-2',
         password: 'pass',
-        email: 'test2Email@gmail.com',
       },
       {
         id: 3,
         username: 'test-3',
         password: 'pass',
-        email: 'test3Email@gmail.com',
       }
     ]
   };
@@ -33,7 +30,7 @@ function makeGameHistoryArray(){
         id: 1,
         player1: 2,
         player2: 1,
-        room_id: "100",
+        room_id: "4e48861f-031e-40ed-afb9-90cc99d212dc",
         next: null,
         turn: 'player1',
         game_status: 'active'
@@ -42,7 +39,7 @@ function makeGameHistoryArray(){
         id: 2,
         player1: 1,
         player2: 2,
-        room_id: "200",
+        room_id: "8802e54c-fac9-4580-83bd-8728d40262e2",
         next: null,
         turn: 'player2',
         game_status: 'active'
@@ -51,7 +48,7 @@ function makeGameHistoryArray(){
         id: 3,
         player1: 1,
         player2: 2,
-        room_id: "300",
+        room_id: "ed68f005-b1c4-42b3-bcca-f2d75f834a9a",
         next: null,
         turn: 'player2',
         game_status: 'active'
@@ -60,7 +57,7 @@ function makeGameHistoryArray(){
         id: 4,
         player1: 1,
         player2: 2,
-        room_id: "400",
+        room_id: "d1774744-f331-4460-a173-a76c57c3c13e",
         next: null,
         turn: 'player2',
         game_status: 'complete'
@@ -69,7 +66,7 @@ function makeGameHistoryArray(){
         id: 5,
         player1: 1,
         player2: 2,
-        room_id: "500",
+        room_id: "b46c97ff-e6b1-4543-beb1-461139fa731b",
         next: null,
         turn: 'player2',
         game_status: 'active'

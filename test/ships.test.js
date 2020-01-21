@@ -4,9 +4,9 @@ const app = require('../src/app');
 
 describe('/ships route', () => {
     let db;
-    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail@gmail.com' };
-    let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail2@gmail.com' };
-    let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG', email: 'someEmail3@gmail.com' };
+    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG'};
+    let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
+    let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
 
     let testShips = [{"name":"aircraftCarrier","length":5,"spaces":["A1","A2","A3","A4","A5"]},{"name":"battleship","length":4,"spaces":["A6","A7","A8","A9"]},{"name":"cruiser","length":3,"spaces":["A10","B10","C10"]},{"name":"submarine","length":3,"spaces":["D10","E10","F10"]},{"name":"defender","length":2,"spaces":["I10","H10"]}];
 
@@ -42,8 +42,8 @@ describe('/ships route', () => {
 
         context('database is populated', () => {
             let games = [
-                { player1: 1, player2: 2, room_id: '1' }, { player1: 1, player2: 2, room_id: '2' },
-                { player1: 3, player2: 2, room_id: '3' }, { player1: 1, player2: 2, room_id: '4' }
+                { player1: 1, player2: 2, room_id: 'e4b2da9f-e85a-4d3d-b69b-e1cdf0727324' }, { player1: 1, player2: 2, room_id: 'cb36b04f-5bf8-4bcc-84ec-5a7c9413aafd' },
+                { player1: 3, player2: 2, room_id: '07e295c4-bb19-447f-ba03-3eb4c91447a8' }, { player1: 1, player2: 2, room_id: '4e48861f-031e-40ed-afb9-90cc99d212dc' }
             ];
 
             let gameData = [
