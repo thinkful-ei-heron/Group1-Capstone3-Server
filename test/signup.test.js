@@ -17,9 +17,9 @@ describe('/signup route', () => {
         app.set('db', db);
     });
 
-    before(() => db.raw('truncate users, stats restart identity cascade'));
+    before(() => db.raw('TRUNCATE room_queue, game_data, game_history, stats, users RESTART IDENTITY CASCADE'));
 
-    afterEach(() => db.raw('truncate users, stats restart identity cascade'));
+    afterEach(() => db.raw('TRUNCATE room_queue, game_data, game_history, stats, users RESTART IDENTITY CASCADE'));
 
     after(() => db.destroy());
 

@@ -7,14 +7,13 @@ const uuid = require('uuid/v4');
 const socketRouter = function (io, db) {
 
     io.on('connection', function (socket) {
-        // console.log('connected', socket.userInfo);
 
         //Connects sockets to rooms
-        socket.on('join_room', async (room) => {
+        socket.on('join_room', async (data) => {
             let playerId = socket.userInfo.id;
             
             //If a random room is requested
-            if (room === 'random') {
+            if (data === 'random') {
                 let room = await socketService.findRoom(db);
 
                 //check to see if there are any rooms in the queue
@@ -70,8 +69,9 @@ const socketRouter = function (io, db) {
 
 
             } else {
+                let xssRoom = xss(data)
                 //Tries to find the game the socket is requesting
-                let foundGame = await socketService.findGame(db, room);
+                let foundGame = await socketService.findGame(db, xssRoom);
 
                 //If no such game exists
                 if (!foundGame) {
@@ -87,8 +87,8 @@ const socketRouter = function (io, db) {
                 }
                 //Join and notify the socket
                 else {
-                    socket.join(room);
-                    socket.emit('reconnected', { room: room });
+                    socket.join(xssRoom);
+                    socket.emit('reconnected', { room: xssRoom });
                 }
             }
         });
@@ -96,7 +96,9 @@ const socketRouter = function (io, db) {
 
         //Performs the check to see if a given shot is a hit or miss, updates db accordingly
         socket.on('fire', async (data) => {
-            const { target, gameId, roomId} = data;
+            const target = xss(data.target);
+            const gameId = xss(data.gameId);
+            const roomId = xss(data.roomId);
             let playerId = socket.userInfo.id;
             
             //Default the target is correct
@@ -216,23 +218,20 @@ const socketRouter = function (io, db) {
         })
 
 
-        socket.on('ships_ready', room => {
+        socket.on('ships_ready', data => {
+            let room = xss(data);
 
             socket.broadcast.to(room).emit('opponent_ready', {});
         })
 
 
         socket.on('send-message', data => {
+            let room = xss(data.room);
+            let message = xss(data.message);
 
-            socket.broadcast.to(data.room).emit('chat-message', { username: socket.userInfo.username, message: data.message })
+            socket.broadcast.to(room).emit('chat-message', { username: socket.userInfo.username, message: message })
         })
 
-
-        // socket.on('disconnect', () => {
-        //     // console.log('Someone has left a room')
-
-        //     io.sockets.emit('left', 'The other Player has left')
-        // })
     });
 };
 

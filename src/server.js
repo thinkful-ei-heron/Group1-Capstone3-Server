@@ -48,13 +48,11 @@ io.use((socket, next) => {
                     next();
                 }
                 else {
-                    //console.log('no user found')
                     socket.error({error: 'Invalid Authorization headers'});
                     socket.disconnect(true);
                 }
             });
     } catch(e) {
-        //console.log('improper auth')
         socket.error({error: 'Invalid Authorization headers'});
         socket.disconnect(true);
     }

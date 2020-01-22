@@ -17,9 +17,10 @@ shipsRouter
     if (!playerNum || !gameId || !shipData) {
       return res.status(400).json({ error: 'Must provide player number, game id and ship data to save ship data' });
     }
-
+    
     //Sanitizing input
-    let jsonShips = JSON.stringify(shipData)
+    let jsonShips = JSON.stringify(shipData);
+    
     let xssShipData = xss(jsonShips);
     let xssPlayerNum = xss(playerNum);
     let xssGameId = xss(gameId);
@@ -45,8 +46,8 @@ shipsRouter
     }
 
 
-    let result = await ShipsService.setPlayerShips(db, xssGameId, xssPlayerNum, xssShipData)
-    return res.status(201).json(result);
+    await ShipsService.setPlayerShips(db, xssGameId, xssPlayerNum, xssShipData)
+    return res.status(201).end();
 
   });
 

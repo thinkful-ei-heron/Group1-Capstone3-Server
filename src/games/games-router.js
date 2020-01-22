@@ -1,8 +1,9 @@
 const express = require('express');
-const gamesRouter = express.Router();
 const GamesService = require('./GamesService');
-const jsonBodyParser = express.json();
+const xss = require('xss');
 
+const gamesRouter = express.Router();
+const jsonBodyParser = express.json();
 
 gamesRouter
   //this endpoint retrives all of the logged in user's active games
@@ -72,7 +73,9 @@ gamesRouter
   .route('/activegame/:gameId/:playerNum')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId, playerNum } = req.params;
+    const gameId = xss(req.params.gameId);
+    const playerNum = xss(req.params.playerNum);
+
     let opponentString = (playerNum === 'player1') ? 'player2' : 'player1';
     let playerString = playerNum;
 
@@ -106,11 +109,15 @@ gamesRouter
     })
       .catch(next);
   })
+
+
   .patch(jsonBodyParser, (req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId } = req.params;
-    const { opponentNum, opponentId } = req.body;
     const userId = req.app.get('user').id;
+    
+    const gameId = xss(req.params.gameId);
+    const opponentNum = xss(req.body.opponentNum);
+    const opponentId = xss(req.body.opponentId);
     
     //check to see if this game has already been forfeited/completed
     //if it has not, then proceed to update game_history, game_data, and user stats
@@ -139,7 +146,8 @@ gamesRouter
   .route('/results/:gameId')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId } = req.params;
+    const gameId = xss(req.params.gameId);
+
     GamesService.retrieveResults(knexInstance, gameId).then(data => {
       if (!data[0]) {
         return res.status(400).json({ error: 'Must send a gameId of an existing game' });

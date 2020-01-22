@@ -4,11 +4,11 @@ const app = require('../src/app');
 
 describe('/ships route', () => {
     let db;
-    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG'};
+    let testUser = { username: 'admin1', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
     let testUser2 = { username: 'admin2', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
     let testUser3 = { username: 'admin3', password: '$2a$10$fCWkaGbt7ZErxaxclioLteLUgg4Q3Rp09WW0s/wSLxDKYsaGYUpjG' };
 
-    let testShips = [{"name":"aircraftCarrier","length":5,"spaces":["A1","A2","A3","A4","A5"]},{"name":"battleship","length":4,"spaces":["A6","A7","A8","A9"]},{"name":"cruiser","length":3,"spaces":["A10","B10","C10"]},{"name":"submarine","length":3,"spaces":["D10","E10","F10"]},{"name":"defender","length":2,"spaces":["I10","H10"]}];
+    let testShips = [{ "name": "aircraftCarrier", "length": 5, "spaces": ["A1", "A2", "A3", "A4", "A5"] }, { "name": "battleship", "length": 4, "spaces": ["A6", "A7", "A8", "A9"] }, { "name": "cruiser", "length": 3, "spaces": ["A10", "B10", "C10"] }, { "name": "submarine", "length": 3, "spaces": ["D10", "E10", "F10"] }, { "name": "defender", "length": 2, "spaces": ["I10", "H10"] }];
 
     let webToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE1NzkwMzk0NjMsInN1YiI6ImFkbWluMSJ9.pn2pMZHk3ocopmvODV4hG5t5ue9fbwjD-gwWawZY0H4';
 
@@ -31,8 +31,8 @@ describe('/ships route', () => {
     afterEach(() => {
         return db.raw(
             `TRUNCATE room_queue, game_data, game_history, stats, users RESTART IDENTITY CASCADE`
-          );
-        
+        );
+
     });
 
     after(() => db.destroy());
@@ -152,29 +152,29 @@ describe('/ships route', () => {
                     .expect(400, { error: 'Must provide complete data for all 5 ships' });
             });
 
-            
+
 
 
             it('returns 201 if ships sucessfully set (FULL INTEGRATION)', () => {
                 return supertest(app)
-                .post('/api/ships')
-                .set('Authorization', `Bearer ${webToken}`)
-                .send({ shipData: testShips, playerNum: 'player1', gameId: 1 })
-                .expect(201)
-                .then((res) => {
-                    expect(res.body).to.be.an('Object');
-                    expect(res.body).to.have.all.keys('id', 'game_id', 'player1_ships', 'player2_ships', 'player1_hits', 'player2_hits', 'player1_misses', 'player2_misses', 'winner', 'last_move');
-                    expect(res.body.game_id).to.equal(1);
-                    expect(JSON.parse(res.body.player1_ships)).to.eql(testShips);
+                    .post('/api/ships')
+                    .set('Authorization', `Bearer ${webToken}`)
+                    .send({ shipData: testShips, playerNum: 'player1', gameId: 1 })
+                    .expect(201)
+                    .then((res) => {
 
-                    db('game_data')
-                        .select('*')
-                        .where({game_id: 1})
-                        .first()
-                        .then((row) => {
-                            expect(row).to.eql(res.body);
-                        });
-                });
+
+                        db('game_data')
+                            .select('*')
+                            .where({ game_id: 1 })
+                            .first()
+                            .then((row) => {
+                                expect(row).to.be.an('Object');
+                                expect(row).to.have.all.keys('id', 'game_id', 'player1_ships', 'player2_ships', 'player1_hits', 'player2_hits', 'player1_misses', 'player2_misses', 'winner', 'last_move');
+                                expect(row.game_id).to.equal(1);
+                                expect(JSON.parse(row.player1_ships)).to.eql(testShips);
+                            });
+                    });
             });
         });
     });
