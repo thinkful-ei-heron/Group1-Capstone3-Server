@@ -80,8 +80,8 @@ describe('Games Endpoints', () => {
             expectedGames[i].player2_username = testUsers[0].username;
           }
         }
-  
-  
+
+
         return supertest(app)
           .get('/api/games')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
@@ -168,7 +168,7 @@ describe('Games Endpoints', () => {
         return supertest(app)
           .get('/api/games/prev')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-          .expect(200, { result: [], userId: testUsers[0].id, playerUsername: 'test-1'});
+          .expect(200, { result: [], userId: testUsers[0].id, playerUsername: 'test-1' });
       });
     });
 
@@ -183,7 +183,7 @@ describe('Games Endpoints', () => {
       );
 
       it('returns correct previous game data', () => {
-       
+
         return supertest(app)
           .get('/api/games/prev')
           .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
@@ -348,7 +348,7 @@ describe('Games Endpoints', () => {
       });
     });
     context('PATCH endpoint', () => {
-      beforeEach('insert users, game history, and game data', () => 
+      beforeEach('insert users, game history, and game data', () =>
         helpers.seedGamesDataTable(
           db,
           testUsers,
@@ -358,26 +358,26 @@ describe('Games Endpoints', () => {
       );
       it('returns 400 and error when trying to forfeit an game that does not exist', () => {
         return supertest(app)
-        .patch('/api/games/activegame/99/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .send({opponentNum:'player2', opponentId: 2})
-        .expect(400, {error: 'invalid game id'});
-        });
+          .patch('/api/games/activegame/99/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ opponentNum: 'player2', opponentId: 2 })
+          .expect(400, { error: 'invalid game id' });
+      });
 
       it('returns 400 and error when trying to forfeit an already ended game', () => {
         return supertest(app)
-        .patch('/api/games/activegame/4/player1')
-        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .send({opponentNum:'player2', opponentId: 2})
-        .expect(400, {error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired'});
-        });
+          .patch('/api/games/activegame/4/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ opponentNum: 'player2', opponentId: 2 })
+          .expect(400, { error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired' });
+      });
 
       it('returns the correct message when forfeiting a game', () => {
-      return supertest(app)
-      .patch('/api/games/activegame/1/player1')
-      .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-      .send({opponentNum:'player2', opponentId: 2})
-      .expect(200, {message: 'Game forfeited'});
+        return supertest(app)
+          .patch('/api/games/activegame/1/player1')
+          .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+          .send({ opponentNum: 'player2', opponentId: 2 })
+          .expect(200, { message: 'Game forfeited' });
       });
     });
   });
@@ -407,14 +407,28 @@ describe('Games Endpoints', () => {
         .expect(400, { error: 'Game is not completed' });
     });
 
+    it('returns an error when user is not part of the game', () => {
+      return supertest(app)
+        .get('/api/games/results/4')
+        .set('Authorization', helpers.makeAuthHeader(testUsers[2]))
+        .expect(400, { error: 'This is not your game.' });
+    });
+
     it('returns the correct game data given a valid completed game', () => {
-      //this endpoint does not parse the data prior to returning it to the client.
-      let expected = testData[3];
-      expected.player1_ships = JSON.stringify(expected.player1_ships);
+
       return supertest(app)
         .get('/api/games/results/4')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
-        .expect(200, [expected]);
+        .expect(200)
+        .then((res) => {
+
+          expect(res.body).to.be.an('Object');
+          expect(res.body).to.have.all.keys('player1_hits', 'player1_misses', 'player2_hits', 'player2_misses', 'winner');
+          expect(res.body.player1_hits).to.be.an('Array');
+          expect(res.body.player1_hits).to.eql(['A1', 'A2', 'A3', 'A4', 'A5']);
+          expect(res.body.winner).to.equal('player1');
+
+        });
     });
   });
 

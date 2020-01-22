@@ -128,7 +128,7 @@ function makeGamesDataArray(){
     },
     {
       id: 4,
-      game_id: 4,
+      game_id: 4, 
       player1_ships: 
       [{ 'name': 'aircraftCarrier', 'length': 5, 'spaces': ['A1', 'A2', 'A3', 'A4', 'A5'] },
       { 'name': 'battleship', 'length': 4, 'spaces': ['B1', 'B2', 'B3', 'B4'] },
@@ -136,7 +136,7 @@ function makeGamesDataArray(){
       { 'name': 'submarine', 'length': 3, 'spaces': ['D1', 'D2', 'D3'] },
       { 'name': 'defender', 'length': 2, 'spaces': ['E1', 'E2'] }],
       player2_ships: null,
-      player1_hits: null,
+      player1_hits: ['A1', 'A2', 'A3', 'A4', 'A5'],
       player1_misses: null,
       player2_hits: null,
       player2_misses:null,
@@ -247,7 +247,7 @@ function seedGamesDataTable(db, users, games, data) {
           game_id: game.game_id,
           player1_ships: JSON.stringify(game.player1_ships),
           player2_ships: game.player2_ships,
-          player1_hits: game.player1_hits,
+          player1_hits: JSON.stringify(game.player1_hits),
           player1_misses: game.player1_misses,
           player2_hits: game.player2_hits,
           player2_misses: game.player2_misses,
