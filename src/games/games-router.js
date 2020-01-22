@@ -10,7 +10,7 @@ gamesRouter
   .get(async (req, res, next) => {
     const db = req.app.get('db');
     const userId = req.app.get('user').id;
-  
+
     //Checks for any games that have expired
     let expiredGames = await GamesService.getExpiredGames(db, userId);
 
@@ -47,7 +47,7 @@ gamesRouter
     const playerUsername = req.app.get('user').username;
 
     let previousGames = await GamesService.getAllPreviousGames(db, userId);
-    return res.status(200).json({result: previousGames, userId, playerUsername});
+    return res.status(200).json({ result: previousGames, userId, playerUsername });
 
   })
 
@@ -94,6 +94,35 @@ gamesRouter
         return res.status(400).json({ error: 'Cannot resume a completed game' });
       }
 
+      //the following will be used to track the user's progress to see how many of 
+      //the opponent's ships coordinates have been hit.
+      let shipsCounter = {
+        'aircraftCarrier': { hit: 0, length: 5, spaces: [], sunk: false },
+        'battleship': { hit: 0, length: 4, spaces: [], sunk: false },
+        'cruiser': { hit: 0, length: 3, spaces: [], sunk: false },
+        'submarine': { hit: 0, length: 3, spaces: [], sunk: false },
+        'defender': { hit: 0, length: 2, spaces: [], sunk: false }
+      }
+
+      if (gameData[`${opponentString}_ships`]) {
+        JSON.parse(gameData[`${opponentString}_ships`]).map(ship => {
+          return ship.spaces.map(space => {
+            
+            if(gameData[`${playerNum}_hits`]){
+              if (JSON.parse(gameData[`${playerNum}_hits`]).includes(space)) {
+                shipsCounter[ship.name].hit = shipsCounter[ship.name].hit + 1
+                shipsCounter[ship.name].spaces = [...shipsCounter[ship.name].spaces, space]
+                if(shipsCounter[ship.name].hit === shipsCounter[ship.name].length){
+                  shipsCounter[ship.name].sunk = true
+                } 
+              }
+              return null
+            }
+            return null
+          })
+        })
+      }
+
       gameData[`${opponentString}_ships`] = gameData[`${opponentString}_ships`] ? true : false;
       gameData[`${playerString}_ships`] = JSON.parse(gameData[`${playerString}_ships`]);
       gameData.player1_hits = JSON.parse(gameData.player1_hits);
@@ -101,6 +130,7 @@ gamesRouter
       gameData.player1_misses = JSON.parse(gameData.player1_misses);
       gameData.player2_misses = JSON.parse(gameData.player2_misses);
       gameData.currentUser = playerNum;
+      gameData.shipsCounter = shipsCounter;
 
       res.status(200).json(gameData);
     })
@@ -111,28 +141,28 @@ gamesRouter
     const { gameId } = req.params;
     const { opponentNum, opponentId } = req.body;
     const userId = req.app.get('user').id;
-    
+
     //check to see if this game has already been forfeited/completed
     //if it has not, then proceed to update game_history, game_data, and user stats
     GamesService.getGameData(knexInstance, gameId)
-    .then((data) => {
+      .then((data) => {
 
-      if(!data) {
-        return res.status(400).json({error: 'invalid game id'});
-      }
-      else if(data.winner) {
-        return res.status(400).json({error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired'});
-      } 
-      else {
-        GamesService.updateGameDataWin(knexInstance, gameId, opponentNum);
-        GamesService.forfeitGame(knexInstance, gameId);
-        GamesService.updateWinnerStats(knexInstance, opponentId);
-        GamesService.updateLoserStats(knexInstance, userId);
-        return res.status(200).json({message:'Game forfeited'});
-    }
-  })
-  .catch(next);
-});
+        if (!data) {
+          return res.status(400).json({ error: 'invalid game id' });
+        }
+        else if (data.winner) {
+          return res.status(400).json({ error: 'Cannot Forfeit. Game has already been forfeited, completed, or expired' });
+        }
+        else {
+          GamesService.updateGameDataWin(knexInstance, gameId, opponentNum);
+          GamesService.forfeitGame(knexInstance, gameId);
+          GamesService.updateWinnerStats(knexInstance, opponentId);
+          GamesService.updateLoserStats(knexInstance, userId);
+          return res.status(200).json({ message: 'Game forfeited' });
+        }
+      })
+      .catch(next);
+  });
 
 //this endpoint retrieves all of the data from the game_data table for the finished game.
 gamesRouter
