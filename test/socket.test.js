@@ -54,13 +54,13 @@ describe('Socket Routes', () => {
     });
 
     before((done) => {
-        db.raw('truncate users, stats, game_history, game_data, room_queue restart identity cascade');
+        db.raw('TRUNCATE room_queue, game_data, game_history, stats, users RESTART IDENTITY CASCADE');
 
         done();
     });
 
 
-    afterEach(() => db.raw('truncate users, stats, game_history, game_data, room_queue restart identity cascade'));
+    afterEach(() => db.raw('TRUNCATE room_queue, game_data, game_history, stats, users RESTART IDENTITY CASCADE'));
 
     after(() => db.destroy());
 

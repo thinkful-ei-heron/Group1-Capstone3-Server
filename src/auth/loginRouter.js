@@ -1,5 +1,6 @@
 const express = require('express');
 const AuthService = require('./authService');
+const xss = require('xss');
 
 const loginRouter = express.Router();
 const jsonBodyParser = express.json();
@@ -7,7 +8,9 @@ const jsonBodyParser = express.json();
 loginRouter
   .route('/')
   .post(jsonBodyParser, async (req, res, next) => {
-    const { username, password } = req.body
+    const username = xss(req.body.username);
+    const password = xss(req.body.password);
+
     const loginUser = { username, password}
 
     if(!username)

@@ -16,12 +16,9 @@ signupRouter
             return res.status(400).json({ error: 'Must provide password.' });
         }
 
-
-
         //Sanitizing input
         let xssU = xss(username);
         let xssP = xss(password);
-
 
 
         let usernameError = signupService.validateUsername(xssU);
@@ -33,8 +30,6 @@ signupRouter
         if (passError) {
             return res.status(400).json({ error: passError });
         }
-
-
 
 
         //Checks to see if the username provided is taken

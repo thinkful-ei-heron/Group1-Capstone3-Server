@@ -1,8 +1,9 @@
 const express = require('express');
-const gamesRouter = express.Router();
 const GamesService = require('./GamesService');
-const jsonBodyParser = express.json();
+const xss = require('xss');
 
+const gamesRouter = express.Router();
+const jsonBodyParser = express.json();
 
 gamesRouter
   //this endpoint retrives all of the logged in user's active games
@@ -72,7 +73,7 @@ gamesRouter
   .route('/activegame/:gameId')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId } = req.params;
+    const gameId = xss(req.params.gameId);
     const userId = req.app.get('user').id;
     let opponentString = null;
     let playerString = null;
@@ -145,10 +146,12 @@ gamesRouter
     })
       .catch(next);
   })
+
+
   .patch(jsonBodyParser, (req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId } = req.params;
     const userId = req.app.get('user').id;
+    const gameId = xss(req.params.gameId);
     let opponentNum = null;
     let opponentId = null;
     
@@ -167,7 +170,7 @@ gamesRouter
           }else{
             return res.status(400).json({error: 'User does not have access to this game'})
           }
-      }
+        }
 
         if (!data) {
           return res.status(400).json({ error: 'invalid game id' });
@@ -191,16 +194,30 @@ gamesRouter
   .route('/results/:gameId')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId } = req.params;
+    const gameId = xss(req.params.gameId);
+    const playerId = req.app.get('user').id;
+
     GamesService.retrieveResults(knexInstance, gameId).then(data => {
-      if (!data[0]) {
+      if (!data) {
         return res.status(400).json({ error: 'Must send a gameId of an existing game' });
       }
 
-      if (!data[0].winner) {
+      if (!data.winner) {
         return res.status(400).json({ error: 'Game is not completed' });
       }
-      res.status(200).json(data);
+
+      if(playerId !== data.player1 && playerId !== data.player2) {
+        return res.status(400).json({error: 'This is not your game.'});
+      }
+
+      let parsed = {
+        player1_hits: JSON.parse(data.player1_hits),
+        player1_misses: JSON.parse(data.player1_misses),
+        player2_hits: JSON.parse(data.player2_hits),
+        player2_misses: JSON.parse(data.player2_misses),
+        winner: data.winner
+      }
+      return res.status(200).json(parsed);
     })
       .catch(next);
   });

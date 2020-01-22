@@ -25,11 +25,11 @@ const GamesService = {
       .from('game_history')
       .where('game_status', '!=', 'active')
       .andWhere(q => {
-        q.where({ player1: userId});
-        q.orWhere({ player2: userId});
+        q.where({ player1: userId });
+        q.orWhere({ player2: userId });
       })
       .join('users as player1', 'player1.id', 'game_history.player1')
-      .join('game_data', 'game_data.game_id', 'game_history.id' )
+      .join('game_data', 'game_data.game_id', 'game_history.id')
       .leftJoin('users as player2', 'player2.id', 'game_history.player2')
       .returning('*')
       .then(rows => {
@@ -42,17 +42,17 @@ const GamesService = {
     return db
       .select('player1', 'player2', 'turn', 'game_id', 'game_data.id as game_data_id')
       .from('game_history')
-      .join('game_data', 'game_data.game_id', 'game_history.id' )
+      .join('game_data', 'game_data.game_id', 'game_history.id')
       .whereRaw('( now() - interval \'3 days\') > game_data.last_move')
       .andWhere(q => {
-        q.where({'game_history.player1': userId, 'game_history.game_status': 'active'});
-        q.orWhere({'game_history.player2': userId, 'game_history.game_status': 'active'});
+        q.where({ 'game_history.player1': userId, 'game_history.game_status': 'active' });
+        q.orWhere({ 'game_history.player2': userId, 'game_history.game_status': 'active' });
       })
       .returning('*')
       .then(rows => {
         return rows;
       });
-      
+
   },
 
 
@@ -73,13 +73,11 @@ const GamesService = {
   //accesses all of the data from the game_data table for the specified gameId
   retrieveResults(db, gameId) {
     return db
-    .select('game_data.*')
-    .from('game_data')
-    .where({game_id: gameId})
-    .returning('*')
-    .then(rows => {
-      return rows;
-    });
+      .select('player1_hits', 'player1_misses', 'player2_hits', 'player2_misses', 'winner', 'player1', 'player2')
+      .from('game_data')
+      .join('game_history', 'game_data.game_id', 'game_history.id')
+      .where({ game_id: gameId })
+      .first();
   },
 
   //return the user's stats and the username to use on the
@@ -140,7 +138,7 @@ const GamesService = {
 
 
   //forfeitGame changes game_status to 'forfeited'
-  forfeitGame(db, game_id){
+  forfeitGame(db, game_id) {
     return db
       .from('game_history')
       .where({ id: game_id })
@@ -175,7 +173,7 @@ const GamesService = {
       });
   },
 
-//increments the loser's lose stats by 1
+  //increments the loser's lose stats by 1
   updateLoserStats(db, loser_id) {
     return db
       .from('stats')
