@@ -451,11 +451,6 @@ describe('Games Endpoints', () => {
     });
 
     it('returns the correct game data given a valid completed game', () => {
-      //this endpoint does not parse the data prior to returning it to the client.
-      let expected = testData[3];
-      expected.player1_ships = JSON.stringify(expected.player1_ships);
-      expected.player2_hits = JSON.stringify(expected.player2_hits);
-
       return supertest(app)
         .get('/api/games/results/4')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
