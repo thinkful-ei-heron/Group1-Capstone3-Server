@@ -350,6 +350,36 @@ describe('Games Endpoints', () => {
           .set('Authorization', helpers.makeAuthHeader(testUsers[1]))
           .expect(200, expectedResult);
       });
+
+      it('returns the correct values for shipsCounter wherein the current user is player 2 and they have made hits on the opponents ships', () => {
+        let expectedResult = {
+          player1_ships: testData[0].player1_ships ? true : false,
+          player2_ships: testData[0].player2_ships,
+          player1_hits: testData[0].player1_hits,
+          player2_hits: testData[0].player2_hits,
+          player1_misses: testData[0].player1_misses,
+          player2_misses: testData[0].player2_misses,
+          currentUser: 'player2',
+          id: 1,
+          game_id: 1,
+          turn: testGames[0].turn,
+          winner: testData[0].winner,
+          last_move: null,
+          player1: testUsers[1].id,
+          player2: testUsers[0].id,
+          shipsCounter: {
+            'aircraftCarrier': { hit: 5, length: 5, spaces: ['A1', 'A2', 'A3', 'A4', 'A5'], sunk: true },
+            'battleship': { hit: 0, length: 4, spaces: [], sunk: false },
+            'cruiser': { hit: 0, length: 3, spaces: [], sunk: false },
+            'submarine': { hit: 0, length: 3, spaces: [], sunk: false },
+            'defender': { hit: 0, length: 2, spaces: [], sunk: false }
+          }
+        };
+        return supertest(app)
+        .get('/api/games/activegame/1')
+        .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+        .expect(200, expectedResult);
+      });
     });
     context('PATCH endpoint', () => {
       beforeEach('insert users, game history, and game data', () =>
@@ -415,6 +445,7 @@ describe('Games Endpoints', () => {
       //this endpoint does not parse the data prior to returning it to the client.
       let expected = testData[3];
       expected.player1_ships = JSON.stringify(expected.player1_ships);
+      expected.player2_hits = JSON.stringify(expected.player2_hits);
       return supertest(app)
         .get('/api/games/results/4')
         .set('Authorization', helpers.makeAuthHeader(testUsers[0]))

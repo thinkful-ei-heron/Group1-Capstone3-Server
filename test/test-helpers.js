@@ -87,7 +87,7 @@ function makeGamesDataArray(){
       player2_ships: null,
       player1_hits: null,
       player1_misses: null,
-      player2_hits: null,
+      player2_hits: ['A1', 'A2', 'A3', 'A4', 'A5'],
       player2_misses:null,
       winner: null,
       last_move: null
@@ -249,7 +249,7 @@ function seedGamesDataTable(db, users, games, data) {
           player2_ships: game.player2_ships,
           player1_hits: game.player1_hits,
           player1_misses: game.player1_misses,
-          player2_hits: game.player2_hits,
+          player2_hits: JSON.stringify(game.player2_hits),
           player2_misses: game.player2_misses,
           winner: game.winner,
           last_move: game.last_move
