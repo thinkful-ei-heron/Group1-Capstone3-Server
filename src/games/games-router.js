@@ -69,23 +69,30 @@ gamesRouter
 // return 'true' otherwise we will return 'false'. This prevents us from sending 
 // the location data for the opponent's ships to the current user.
 gamesRouter
-  .route('/activegame/:gameId/:playerNum')
+  .route('/activegame/:gameId')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
-    const { gameId, playerNum } = req.params;
-    let opponentString = (playerNum === 'player1') ? 'player2' : 'player1';
-    let playerString = playerNum;
+    const { gameId } = req.params;
+    const userId = req.app.get('user').id;
+    let opponentString = null;
+    let playerString = null;
+
 
     if (isNaN(gameId)) {
       return res.status(400).json({ error: 'Must send a valid game id' });
     }
 
-    if (playerNum !== 'player1' && playerNum !== 'player2') {
-      return res.status(400).json({ error: 'Must send a valid playerNum' });
-    }
-
-
     GamesService.retrieveGameData(knexInstance, gameId).then(data => {
+      if(userId === data.player1){
+        playerString = 'player1'
+        opponentString = 'player2'
+      } else if (userId === data.player2) {
+        playerString  ='player2'
+        opponentString = 'player1'
+      } else {
+        return res.status(400).json({error: 'User does not have access to this game'})
+      }
+
       let gameData = data;
       if (!gameData) {
         return res.status(400).json({ error: 'Must send a gameId of an existing game' });
@@ -108,8 +115,8 @@ gamesRouter
         JSON.parse(gameData[`${opponentString}_ships`]).map(ship => {
           return ship.spaces.map(space => {
             
-            if(gameData[`${playerNum}_hits`]){
-              if (JSON.parse(gameData[`${playerNum}_hits`]).includes(space)) {
+            if(gameData[`${playerString}_hits`]){
+              if (JSON.parse(gameData[`${playerString}_hits`]).includes(space)) {
                 shipsCounter[ship.name].hit = shipsCounter[ship.name].hit + 1
                 shipsCounter[ship.name].spaces = [...shipsCounter[ship.name].spaces, space]
                 if(shipsCounter[ship.name].hit === shipsCounter[ship.name].length){
@@ -129,7 +136,7 @@ gamesRouter
       gameData.player2_hits = JSON.parse(gameData.player2_hits);
       gameData.player1_misses = JSON.parse(gameData.player1_misses);
       gameData.player2_misses = JSON.parse(gameData.player2_misses);
-      gameData.currentUser = playerNum;
+      gameData.currentUser =  playerString;
       gameData.shipsCounter = shipsCounter;
 
       res.status(200).json(gameData);
@@ -139,14 +146,25 @@ gamesRouter
   .patch(jsonBodyParser, (req, res, next) => {
     const knexInstance = req.app.get('db');
     const { gameId } = req.params;
-    const { opponentNum, opponentId } = req.body;
     const userId = req.app.get('user').id;
+    let opponentNum = null;
+    let opponentId = null;
+    
 
     //check to see if this game has already been forfeited/completed
     //if it has not, then proceed to update game_history, game_data, and user stats
-    GamesService.getGameData(knexInstance, gameId)
+    GamesService.retrieveGameData(knexInstance, gameId)
       .then((data) => {
-
+        if(userId === data.player1){
+          opponentNum = 'player2';
+          opponentId = data.player2;
+        } else if (userId === data.player2){
+          opponentNum = 'player1';
+          opponentId = data.player1;
+        }else{
+          return res.status(400).json({error: 'User does not have access to this game'})
+        }
+        
         if (!data) {
           return res.status(400).json({ error: 'invalid game id' });
         }
