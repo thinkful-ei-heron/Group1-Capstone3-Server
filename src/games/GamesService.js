@@ -60,7 +60,7 @@ const GamesService = {
   //retrieves all of the game data and joins with game_history to return who's turn it is.
   retrieveGameData(db, gameId) {
     return db
-      .select('game_data.*', 'game_history.turn')
+      .select('game_data.*', 'game_history.turn', 'game_history.player1', 'game_history.player2')
       .from('game_data')
       .where({ game_id: gameId })
       .join('game_history', 'game_data.game_id', 'game_history.id')

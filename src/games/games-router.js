@@ -70,25 +70,32 @@ gamesRouter
 // return 'true' otherwise we will return 'false'. This prevents us from sending 
 // the location data for the opponent's ships to the current user.
 gamesRouter
-  .route('/activegame/:gameId/:playerNum')
+  .route('/activegame/:gameId')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db');
     const gameId = xss(req.params.gameId);
-    const playerNum = xss(req.params.playerNum);
+    const userId = req.app.get('user').id;
+    let opponentString = null;
+    let playerString = null;
 
-    let opponentString = (playerNum === 'player1') ? 'player2' : 'player1';
-    let playerString = playerNum;
 
     if (isNaN(gameId)) {
       return res.status(400).json({ error: 'Must send a valid game id' });
     }
 
-    if (playerNum !== 'player1' && playerNum !== 'player2') {
-      return res.status(400).json({ error: 'Must send a valid playerNum' });
-    }
-
-
     GamesService.retrieveGameData(knexInstance, gameId).then(data => {
+      if(data){
+        if(userId === data.player1){
+          playerString = 'player1'
+          opponentString = 'player2'
+        } else if (userId === data.player2) {
+          playerString  ='player2'
+          opponentString = 'player1'
+        } else {
+          return res.status(400).json({error: 'User does not have access to this game'})
+        }
+      }
+
       let gameData = data;
       if (!gameData) {
         return res.status(400).json({ error: 'Must send a gameId of an existing game' });
@@ -97,13 +104,43 @@ gamesRouter
         return res.status(400).json({ error: 'Cannot resume a completed game' });
       }
 
+      //the following will be used to track the user's progress to see how many of 
+      //the opponent's ships coordinates have been hit.
+      let shipsCounter = {
+        'aircraftCarrier': { hit: 0, length: 5, spaces: [], sunk: false },
+        'battleship': { hit: 0, length: 4, spaces: [], sunk: false },
+        'cruiser': { hit: 0, length: 3, spaces: [], sunk: false },
+        'submarine': { hit: 0, length: 3, spaces: [], sunk: false },
+        'defender': { hit: 0, length: 2, spaces: [], sunk: false }
+      }
+
+      if (gameData[`${opponentString}_ships`]) {
+        JSON.parse(gameData[`${opponentString}_ships`]).map(ship => {
+          return ship.spaces.map(space => {
+            
+            if(gameData[`${playerString}_hits`]){
+              if (JSON.parse(gameData[`${playerString}_hits`]).includes(space)) {
+                shipsCounter[ship.name].hit = shipsCounter[ship.name].hit + 1
+                shipsCounter[ship.name].spaces = [...shipsCounter[ship.name].spaces, space]
+                if(shipsCounter[ship.name].hit === shipsCounter[ship.name].length){
+                  shipsCounter[ship.name].sunk = true
+                } 
+              }
+              return null
+            }
+            return null
+          })
+        })
+      }
+
       gameData[`${opponentString}_ships`] = gameData[`${opponentString}_ships`] ? true : false;
       gameData[`${playerString}_ships`] = JSON.parse(gameData[`${playerString}_ships`]);
       gameData.player1_hits = JSON.parse(gameData.player1_hits);
       gameData.player2_hits = JSON.parse(gameData.player2_hits);
       gameData.player1_misses = JSON.parse(gameData.player1_misses);
       gameData.player2_misses = JSON.parse(gameData.player2_misses);
-      gameData.currentUser = playerNum;
+      gameData.currentUser =  playerString;
+      gameData.shipsCounter = shipsCounter;
 
       res.status(200).json(gameData);
     })
@@ -114,15 +151,26 @@ gamesRouter
   .patch(jsonBodyParser, (req, res, next) => {
     const knexInstance = req.app.get('db');
     const userId = req.app.get('user').id;
-
     const gameId = xss(req.params.gameId);
-    const opponentNum = xss(req.body.opponentNum);
-    const opponentId = xss(req.body.opponentId);
+    let opponentNum = null;
+    let opponentId = null;
+    
 
     //check to see if this game has already been forfeited/completed
     //if it has not, then proceed to update game_history, game_data, and user stats
-    GamesService.getGameData(knexInstance, gameId)
+    GamesService.retrieveGameData(knexInstance, gameId)
       .then((data) => {
+        if(data){
+          if(userId === data.player1){
+            opponentNum = 'player2';
+            opponentId = data.player2;
+          } else if (userId === data.player2){
+            opponentNum = 'player1';
+            opponentId = data.player1;
+          }else{
+            return res.status(400).json({error: 'User does not have access to this game'})
+          }
+        }
 
         if (!data) {
           return res.status(400).json({ error: 'invalid game id' });
