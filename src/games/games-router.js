@@ -83,14 +83,16 @@ gamesRouter
     }
 
     GamesService.retrieveGameData(knexInstance, gameId).then(data => {
-      if(userId === data.player1){
-        playerString = 'player1'
-        opponentString = 'player2'
-      } else if (userId === data.player2) {
-        playerString  ='player2'
-        opponentString = 'player1'
-      } else {
-        return res.status(400).json({error: 'User does not have access to this game'})
+      if(data){
+        if(userId === data.player1){
+          playerString = 'player1'
+          opponentString = 'player2'
+        } else if (userId === data.player2) {
+          playerString  ='player2'
+          opponentString = 'player1'
+        } else {
+          return res.status(400).json({error: 'User does not have access to this game'})
+        }
       }
 
       let gameData = data;
@@ -155,16 +157,18 @@ gamesRouter
     //if it has not, then proceed to update game_history, game_data, and user stats
     GamesService.retrieveGameData(knexInstance, gameId)
       .then((data) => {
-        if(userId === data.player1){
-          opponentNum = 'player2';
-          opponentId = data.player2;
-        } else if (userId === data.player2){
-          opponentNum = 'player1';
-          opponentId = data.player1;
-        }else{
-          return res.status(400).json({error: 'User does not have access to this game'})
-        }
-        
+        if(data){
+          if(userId === data.player1){
+            opponentNum = 'player2';
+            opponentId = data.player2;
+          } else if (userId === data.player2){
+            opponentNum = 'player1';
+            opponentId = data.player1;
+          }else{
+            return res.status(400).json({error: 'User does not have access to this game'})
+          }
+      }
+
         if (!data) {
           return res.status(400).json({ error: 'invalid game id' });
         }
