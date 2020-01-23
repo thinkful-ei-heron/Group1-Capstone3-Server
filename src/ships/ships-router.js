@@ -10,7 +10,6 @@ const shipsRouter = express.Router();
 shipsRouter
   .route('/')
   .post(async (req, res, next) => {
-    console.log(req.body);
     const db = req.app.get('db');
     const { shipData, playerNum, gameId } = req.body;
     const user = req.app.get('user');
