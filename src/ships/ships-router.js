@@ -10,6 +10,7 @@ const shipsRouter = express.Router();
 shipsRouter
   .route('/')
   .post(async (req, res, next) => {
+    console.log(req.body);
     const db = req.app.get('db');
     const { shipData, playerNum, gameId } = req.body;
     const user = req.app.get('user');
@@ -40,7 +41,7 @@ shipsRouter
       return res.status(400).json({ error: 'Game data not found' });
     }
 
-    let shipDataError = ShipsService.validateShipData(xssShipData, xssPlayerNum, gameData);
+    let shipDataError = await ShipsService.validateShipData(xssShipData, xssPlayerNum, gameData);
     if (shipDataError) {
       return res.status(400).json({ error: shipDataError });
     }
