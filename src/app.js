@@ -32,11 +32,11 @@ app.use('/api/ships', checkAuth,  shipsRouter);
 app.use(function errorHandler(error, req, res, next) {
     let response;
     if (NODE_ENV === 'production') {
-        response = { error: { message: 'server error' } };
+        response = { error: { error: 'server error' } };
     } 
     else {
         console.error(error);
-        response = { message: error.message };
+        response = { error: error.message };
     }
     res.status(500).json(response);
 });

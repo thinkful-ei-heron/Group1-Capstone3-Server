@@ -4,9 +4,9 @@ CREATE TABLE game_data (
   player1_ships varchar(400) default null,
   player2_ships varchar(400) default null,
   player1_hits varchar(110) default null,
-  player1_misses varchar(110) default null,
+  player1_misses varchar(620) default null,
   player2_hits varchar(110) default null,
-  player2_misses varchar(110) default null,
+  player2_misses varchar(620) default null,
   winner playerTurn default null,
   last_move timestamp default null
 );
