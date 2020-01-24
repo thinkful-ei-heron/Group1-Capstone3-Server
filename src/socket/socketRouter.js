@@ -96,125 +96,130 @@ const socketRouter = function (io, db) {
 
         //Performs the check to see if a given shot is a hit or miss, updates db accordingly
         socket.on('fire', async (data) => {
-            const target = xss(data.target);
-            const gameId = xss(data.gameId);
-            const roomId = xss(data.roomId);
-            let playerId = socket.userInfo.id;
-            
-            //Default the target is correct
-            let targetIncorrectBool = false;
-            //All possible first characters of target
-            let possibleFirst = ['A','B','C','D','E','F','G','H','I','J'];
-            //Target's length can only be 2 or 3 
-            if(!target ||!target.length|| target.length > 3 || target.length === 1) targetIncorrectBool = true;
-            else if(!possibleFirst.includes(target.charAt(0))) targetIncorrectBool = true;
-            //If second character isn't a number
-            else if(!parseInt(target.charAt(1))) targetIncorrectBool = true;
-            //If third character exists but is not 0
-            else if(target.length === 3 && parseInt(target.charAt(2)) !== 0) targetIncorrectBool = true;
-            
-            //Gets entire game_history table in accordance with the sockets requested gameId
-            let gameHistory = await GamesService.getGameHistory(db, gameId);
-
-            
-            //If the selected target doesn't meet the above criteria
-            if(targetIncorrectBool) {
-                socket.emit('error-message', {error: 'The target youve selected is out of bounds'});
-            }
-            //If no game found
-            else if(!gameHistory) {
-                socket.emit('error-message', {error: 'The game you are trying to modify does not exist'});
-            } 
-            //If game has been finished
-            else if (gameHistory.game_status !== 'active') {
-                socket.emit('error-message', {error: 'The game you are trying to modify has been completed'});
-            } 
-            //If player is not a part of the game
-            else if(gameHistory.player1 !== playerId && gameHistory.player2 !== playerId) {
-                socket.emit('error-message', {error: 'You are not allowed to make changes to this game'});
-            } 
-            //If supplied roomId does not match the room_id in game_history
-            else if(gameHistory.room_id !== roomId) {
-                socket.emit('error-message', {error: 'Incorrect room-id or game-id'});
-            } else {
-
-                //Initializing variable and finding out which player sent the message
-                let opponentId = (gameHistory.player1 === playerId) ? gameHistory.player2: gameHistory.player1;
-                let playerString = (gameHistory.player1 === playerId) ? 'player1': 'player2';
-                let opponentString = (gameHistory.player1 === playerId) ? 'player2': 'player1';
-                let result = null;
-                let winner = null;
+            try {
+                const target = xss(data.target);
+                const gameId = xss(data.gameId);
+                const roomId = xss(data.roomId);
+                let playerId = socket.userInfo.id;
                 
-                //Gets entire game_data table in accordance with the sockets requested gameId
-                let gameData = await GamesService.getGameData(db, gameId);
-                let repeatMoveBool = await ShipsService.checkForRepeatMove(target, gameData, playerString);
-
-                //check to see if opponent ships are set in game_data
-                if(!gameData[`${opponentString}_ships`]) {
-                    socket.emit('error-message', {error: 'Must wait until opponent sets their ships'});
+                //Default the target is correct
+                let targetIncorrectBool = false;
+                //All possible first characters of target
+                let possibleFirst = ['A','B','C','D','E','F','G','H','I','J'];
+                //Target's length can only be 2 or 3 
+                if(!target ||!target.length|| target.length > 3 || target.length === 1) targetIncorrectBool = true;
+                else if(!possibleFirst.includes(target.charAt(0))) targetIncorrectBool = true;
+                //If second character isn't a number
+                else if(!parseInt(target.charAt(1))) targetIncorrectBool = true;
+                //If third character exists but is not 0
+                else if(target.length === 3 && parseInt(target.charAt(2)) !== 0) targetIncorrectBool = true;
+                
+                //Gets entire game_history table in accordance with the sockets requested gameId
+                let gameHistory = await GamesService.getGameHistory(db, gameId);
+    
+                
+                //If the selected target doesn't meet the above criteria
+                if(targetIncorrectBool) {
+                    socket.emit('error-message', {error: 'The target youve selected is out of bounds'});
+                }
+                //If no game found
+                else if(!gameHistory) {
+                    socket.emit('error-message', {error: 'The game you are trying to modify does not exist'});
                 } 
-                else if(repeatMoveBool) {
-                    socket.emit('error-message', {error: 'Target has already been selected'});
-                }
-                else if(gameHistory.turn !== playerString) {
-                    socket.emit('error-message', {error: 'You cannot fire when it is not your turn'});
-                }
-                else {
-                    //Returns an object with result and ship keys and a boolean for sunk representing if the
-                    //ship has been sunk.
-                    result = await ShipsService.checkForHit(target, gameData, opponentString, playerString);
-
-                    if (result.result === 'hit') {
-                        //Used to help determine which player's hits to update
-                        let playerHitString = `${playerString}_hits`;
-                        let newHits = [target];
+                //If game has been finished
+                else if (gameHistory.game_status !== 'active') {
+                    socket.emit('error-message', {error: 'The game you are trying to modify has been completed'});
+                } 
+                //If player is not a part of the game
+                else if(gameHistory.player1 !== playerId && gameHistory.player2 !== playerId) {
+                    socket.emit('error-message', {error: 'You are not allowed to make changes to this game'});
+                } 
+                //If supplied roomId does not match the room_id in game_history
+                else if(gameHistory.room_id !== roomId) {
+                    socket.emit('error-message', {error: 'Incorrect room-id or game-id'});
+                } else {
     
-                        //If player hits aren't empty
-                        if(gameData[playerHitString]) {
-                            let currentHits = JSON.parse(gameData[playerHitString]);
-                            newHits = [...currentHits, target];
-    
-                            //If this shot won the game
-                            if(newHits.length >= 17) {
-                                winner = playerString;
-                                GamesService.updateGameDataWin(db, gameId, playerString);
-                                GamesService.endGame(db, gameId);
-                                GamesService.updateWinnerStats(db, playerId);
-                                GamesService.updateLoserStats(db, opponentId);
-                            }
-                        } 
-
-                        //Updates player's hits
-                        await ShipsService.addToHits(db, gameId, JSON.stringify(newHits), playerHitString)
-                    } else {
-                        //Used to help determine which player's misses to update
-                        let playerMissString = `${playerString}_misses`;
-                        let newMisses = [target];
-    
-                        //If player misses aren't empty
-                        if(gameData[playerMissString]) {
-                            let currentHits = JSON.parse(gameData[playerMissString]);
-                            newMisses = [...currentHits, target];
-                        }
-    
-                        //Updates player's misses
-                        await ShipsService.addToMisses(db, gameId, JSON.stringify(newMisses), playerMissString)
-                    }
-    
-                    //Changes turn in game_history
-                    await socketService.swapTurn(db, gameId)
-                                    
-                    //Tell sockets in the room what the result of the shot was
-
-                    io.to(roomId).emit('response', { ...result, playerNum:playerString, target });
-
+                    //Initializing variable and finding out which player sent the message
+                    let opponentId = (gameHistory.player1 === playerId) ? gameHistory.player2: gameHistory.player1;
+                    let playerString = (gameHistory.player1 === playerId) ? 'player1': 'player2';
+                    let opponentString = (gameHistory.player1 === playerId) ? 'player2': 'player1';
+                    let result = null;
+                    let winner = null;
                     
-                    //if the win message exists, then transmit it
-                    if (winner) {
-                        io.to(roomId).emit('win', { winner });
+                    //Gets entire game_data table in accordance with the sockets requested gameId
+                    let gameData = await GamesService.getGameData(db, gameId);
+                    let repeatMoveBool = await ShipsService.checkForRepeatMove(target, gameData, playerString);
+    
+                    //check to see if opponent ships are set in game_data
+                    if(!gameData[`${opponentString}_ships`]) {
+                        socket.emit('error-message', {error: 'Must wait until opponent sets their ships'});
+                    } 
+                    else if(repeatMoveBool) {
+                        socket.emit('error-message', {error: 'Target has already been selected'});
+                    }
+                    else if(gameHistory.turn !== playerString) {
+                        socket.emit('error-message', {error: 'You cannot fire when it is not your turn'});
+                    }
+                    else {
+                        //Returns an object with result and ship keys and a boolean for sunk representing if the
+                        //ship has been sunk.
+                        result = await ShipsService.checkForHit(target, gameData, opponentString, playerString);
+    
+                        if (result.result === 'hit') {
+                            //Used to help determine which player's hits to update
+                            let playerHitString = `${playerString}_hits`;
+                            let newHits = [target];
+        
+                            //If player hits aren't empty
+                            if(gameData[playerHitString]) {
+                                let currentHits = JSON.parse(gameData[playerHitString]);
+                                newHits = [...currentHits, target];
+        
+                                //If this shot won the game
+                                if(newHits.length >= 17) {
+                                    winner = playerString;
+                                    GamesService.updateGameDataWin(db, gameId, playerString);
+                                    GamesService.endGame(db, gameId);
+                                    GamesService.updateWinnerStats(db, playerId);
+                                    GamesService.updateLoserStats(db, opponentId);
+                                }
+                            } 
+    
+                            //Updates player's hits
+                            await ShipsService.addToHits(db, gameId, JSON.stringify(newHits), playerHitString)
+                        } else {
+                            //Used to help determine which player's misses to update
+                            let playerMissString = `${playerString}_misses`;
+                            let newMisses = [target];
+        
+                            //If player misses aren't empty
+                            if(gameData[playerMissString]) {
+                                let currentHits = JSON.parse(gameData[playerMissString]);
+                                newMisses = [...currentHits, target];
+                            }
+        
+                            //Updates player's misses
+                            await ShipsService.addToMisses(db, gameId, JSON.stringify(newMisses), playerMissString)
+                        }
+        
+                        //Changes turn in game_history
+                        await socketService.swapTurn(db, gameId)
+                                        
+                        //Tell sockets in the room what the result of the shot was
+    
+                        io.to(roomId).emit('response', { ...result, playerNum:playerString, target });
+    
+                        
+                        //if the win message exists, then transmit it
+                        if (winner) {
+                            io.to(roomId).emit('win', { winner });
+                        }
                     }
                 }
+            }catch(e) {
+                socket.emit('error-message', {error: e});
             }
+            
         })
 
 
