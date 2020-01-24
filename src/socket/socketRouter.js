@@ -217,6 +217,7 @@ const socketRouter = function (io, db) {
                     }
                 }
             }catch(e) {
+                console.log(e);
                 socket.emit('error-message', {error: '500 error'});
             }
             
